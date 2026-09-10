@@ -41,7 +41,7 @@ Open the AI Token Checker activity-bar view, select a provider, and choose **Con
 
 ### Claude Code
 
-Choose **Set up Claude**. With confirmation, the extension installs a small status-line bridge in VS Code global storage and adds it to Claude's user `settings.json`. If another command already exists, setup offers to compose it: the bridge forwards the original JSON and status-line output unchanged while independently writing the allowlisted metric snapshot. Removal restores the previous command. The bridge allowlists quota percentages, reset times, and current context token counts. It does not copy prompts, completions, session IDs, paths, or credentials into the metric snapshot.
+Choose **Set up Claude**. With confirmation, the extension installs a small status-line bridge in VS Code global storage and adds it to Claude's user `settings.json`. Setup records the validated absolute Node.js executable and requests a 60-second status-line refresh so the bridge does not depend on Claude's shell PATH. If another command already exists, setup offers to compose it: the bridge forwards the original JSON and status-line output unchanged while independently writing the allowlisted metric snapshot. Removal restores the previous command. The bridge allowlists quota percentages, reset times, and current context token counts. It does not copy prompts, completions, session IDs, paths, or credentials into the metric snapshot.
 
 If Claude already has a `statusLine` command, the extension will not change it without explicit composition confirmation. The approved bridge invokes that same user-configured command through the platform shell because that is how Claude status-line commands are defined. The command, input, and output are never logged.
 

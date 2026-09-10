@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.8
+
+- Claude bridge setup now records an absolute Node.js executable instead of relying on the status-line shell PATH.
+- Claude bridge installations request a 60-second status-line refresh.
+- Repair Bridge migrates existing installations to the hardened command without requiring an uninstall.
+
 ## 0.1.7
 
 - The provider Quick Pick uses artwork from installed official provider extensions, with VS Code theme-icon fallbacks.

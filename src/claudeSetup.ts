@@ -1,5 +1,6 @@
 import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { existsSync, statSync } from "node:fs";
+import { delimiter, dirname, join } from "node:path";
 import { copyFile, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
 import * as vscode from "vscode";
 
@@ -22,6 +23,13 @@ export async function setupClaudeBridge(context: vscode.ExtensionContext): Promi
   const statusLineRecord = asRecord(existingStatusLine);
   const existingCommand = typeof statusLineRecord.command === "string" ? statusLineRecord.command : undefined;
   const installedCommand = context.globalState.get<string>(COMMAND_STATE_KEY);
+  const bridgePath = join(context.globalStorageUri.fsPath, "claude-bridge.cjs");
+  const snapshotPath = claudeSnapshotPath(context);
+  const forwardPath = join(context.globalStorageUri.fsPath, "claude-forward.json");
+  const nodeExecutable = resolveNodeExecutable();
+  if ([nodeExecutable, bridgePath, snapshotPath, forwardPath].some((path) => path.includes('"'))) {
+    throw new Error("Claude bridge paths cannot contain quotation marks");
+  }
 
   if (installedCommand && existingCommand === installedCommand) {
     const choice = await vscode.window.showInformationMessage(
@@ -30,7 +38,15 @@ export async function setupClaudeBridge(context: vscode.ExtensionContext): Promi
     );
     if (choice === "Repair Bridge") {
       await mkdir(context.globalStorageUri.fsPath, { recursive: true });
-      await copyFile(join(context.extensionPath, "resources", "claude-bridge.cjs"), join(context.globalStorageUri.fsPath, "claude-bridge.cjs"));
+      await copyFile(join(context.extensionPath, "resources", "claude-bridge.cjs"), bridgePath);
+      const originalStatusLine = asRecord(context.globalState.get<unknown>(ORIGINAL_STATUS_LINE_KEY));
+      const hasForwardCommand = typeof originalStatusLine.command === "string";
+      const repairedCommand = bridgeCommand(nodeExecutable, bridgePath, snapshotPath, hasForwardCommand ? forwardPath : undefined);
+      await atomicWrite(settingsPath, `${JSON.stringify({
+        ...settings,
+        statusLine: { ...statusLineRecord, type: "command", command: repairedCommand, refreshInterval: 60 }
+      }, null, 2)}\n`);
+      await context.globalState.update(COMMAND_STATE_KEY, repairedCommand);
       void vscode.window.showInformationMessage("Claude Code bridge repaired. Restart the Claude Code CLI and send a message to produce a fresh snapshot.");
     }
     return true;
@@ -48,12 +64,6 @@ export async function setupClaudeBridge(context: vscode.ExtensionContext): Promi
   if (choice !== action) return false;
 
   await mkdir(context.globalStorageUri.fsPath, { recursive: true });
-  const bridgePath = join(context.globalStorageUri.fsPath, "claude-bridge.cjs");
-  const snapshotPath = claudeSnapshotPath(context);
-  const forwardPath = join(context.globalStorageUri.fsPath, "claude-forward.json");
-  if ([bridgePath, snapshotPath, forwardPath].some((path) => path.includes('"'))) {
-    throw new Error("Claude bridge paths cannot contain quotation marks");
-  }
   if (existingCommand && /[\r\n\0]/.test(existingCommand)) {
     throw new Error("Existing Claude status-line command is invalid");
   }
@@ -64,12 +74,34 @@ export async function setupClaudeBridge(context: vscode.ExtensionContext): Promi
   } else {
     await unlink(forwardPath).catch(() => undefined);
   }
-  const command = `node "${bridgePath}" "${snapshotPath}"${existingCommand ? ` "${forwardPath}"` : ""}`;
-  await atomicWrite(settingsPath, `${JSON.stringify({ ...settings, statusLine: { type: "command", command } }, null, 2)}\n`);
+  const command = bridgeCommand(nodeExecutable, bridgePath, snapshotPath, existingCommand ? forwardPath : undefined);
+  await atomicWrite(settingsPath, `${JSON.stringify({
+    ...settings,
+    statusLine: { type: "command", command, refreshInterval: 60 }
+  }, null, 2)}\n`);
   await context.globalState.update(COMMAND_STATE_KEY, command);
   await context.globalState.update(ORIGINAL_STATUS_LINE_KEY, existingStatusLine);
   void vscode.window.showInformationMessage(`Claude Code bridge ${existingCommand ? "composed" : "installed"}. It will report metrics after Claude's next response.`);
   return true;
+}
+
+function bridgeCommand(nodeExecutable: string, bridgePath: string, snapshotPath: string, forwardPath?: string): string {
+  return `"${nodeExecutable}" "${bridgePath}" "${snapshotPath}"${forwardPath ? ` "${forwardPath}"` : ""}`;
+}
+
+function resolveNodeExecutable(): string {
+  const executableName = process.platform === "win32" ? "node.exe" : "node";
+  for (const entry of (process.env.PATH ?? "").split(delimiter)) {
+    const directory = entry.trim().replace(/^"|"$/g, "");
+    if (!directory) continue;
+    const candidate = join(directory, executableName);
+    try {
+      if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+    } catch {
+      // Ignore inaccessible PATH entries and continue looking.
+    }
+  }
+  throw new Error("A system Node.js executable is required for the Claude status-line bridge");
 }
 
 export async function removeClaudeBridge(context: vscode.ExtensionContext): Promise<boolean> {
