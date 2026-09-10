@@ -98,26 +98,33 @@ export class CopilotAdapter implements ProviderAdapter {
 interface CopilotQuota {
   isUnlimitedEntitlement: boolean;
   remainingPercentage: number;
+  entitlementRequests?: number;
+  usedRequests?: number;
   resetDate?: string;
 }
 
-export function normalizeCopilot(quotaSnapshots: Record<string, CopilotQuota | undefined>): ProviderSnapshot {
+export function normalizeCopilot(
+  quotaSnapshots: Record<string, CopilotQuota | undefined>,
+  observedAt = new Date()
+): ProviderSnapshot {
     const quotaWindows: QuotaWindow[] = [];
     for (const [id, quota] of Object.entries(quotaSnapshots)) {
       if (!quota || quota.isUnlimitedEntitlement) continue;
+      const resetTime = quota.resetDate ? Date.parse(quota.resetDate) : undefined;
+      if (resetTime !== undefined && Number.isFinite(resetTime) && resetTime <= observedAt.getTime()) continue;
       const usedPercent = 100 - quota.remainingPercentage;
       if (!Number.isFinite(usedPercent)) continue;
       quotaWindows.push({
         id,
-        label: humanize(id).slice(0, 80),
+        label: quotaLabel(id),
         usedPercent,
-        ...(quota.resetDate && !Number.isNaN(Date.parse(quota.resetDate)) ? { resetsAt: quota.resetDate } : {})
+        ...(resetTime !== undefined && Number.isFinite(resetTime) ? { resetsAt: new Date(resetTime).toISOString() } : {})
       });
     }
     return {
       providerId: "copilot",
       state: quotaWindows.length ? "ready" : "unavailable",
-      observedAt: new Date().toISOString(),
+      observedAt: observedAt.toISOString(),
       source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
       quotaWindows,
       ...(quotaWindows.length ? {} : { message: "No bounded Copilot quota was reported; session tokens are unavailable." })
@@ -126,4 +133,10 @@ export function normalizeCopilot(quotaSnapshots: Record<string, CopilotQuota | u
 
 function humanize(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function quotaLabel(value: string): string {
+  if (value === "completions") return "Inline Suggestions";
+  if (value === "premium_interactions") return "Premium Interactions";
+  return humanize(value).slice(0, 80);
 }

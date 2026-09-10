@@ -10,6 +10,7 @@ export async function run(): Promise<void> {
   assert.ok(commands.includes("aiTokenChecker.refresh"));
   assert.ok(commands.includes("aiTokenChecker.connect"));
   assert.ok(commands.includes("aiTokenChecker.showGauge"));
+  assert.ok(commands.includes("aiTokenChecker.pickProvider"));
   assert.ok(commands.includes("aiTokenChecker.setupClaude"));
   console.log(`Integration smoke test passed from ${resolve(__dirname, "../../..")} .`);
 }

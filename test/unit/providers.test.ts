@@ -56,4 +56,22 @@ describe("Copilot normalization", () => {
     const snapshot = normalizeCopilot({ chat: { isUnlimitedEntitlement: true, remainingPercentage: 100 } });
     assert.equal(snapshot.state, "unavailable");
   });
+
+  it("ignores expired quota windows and uses current dashboard labels", () => {
+    const snapshot = normalizeCopilot({
+      premium_interactions: {
+        isUnlimitedEntitlement: false,
+        remainingPercentage: 0,
+        resetDate: "2026-09-10T12:00:00Z"
+      },
+      completions: {
+        isUnlimitedEntitlement: false,
+        remainingPercentage: 96,
+        resetDate: "2026-10-01T00:00:00Z"
+      }
+    }, new Date("2026-09-10T13:00:00Z"));
+    assert.equal(snapshot.quotaWindows.length, 1);
+    assert.equal(snapshot.quotaWindows[0]?.label, "Inline Suggestions");
+    assert.equal(snapshot.quotaWindows[0]?.usedPercent, 4);
+  });
 });

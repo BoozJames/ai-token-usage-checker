@@ -18,7 +18,7 @@ export class UsageStatusBar implements vscode.Disposable {
 
   constructor(private readonly controller: ProviderController) {
     this.item.name = "AI Token Checker Usage";
-    this.item.command = "aiTokenChecker.showGauge";
+    this.item.command = "aiTokenChecker.pickProvider";
     this.subscriptions = [
       controller.onDidChange((state) => this.render(state)),
       vscode.workspace.onDidChangeConfiguration((event) => {

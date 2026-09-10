@@ -33,6 +33,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("aiTokenChecker.refresh", () => controller.refresh()),
     vscode.commands.registerCommand("aiTokenChecker.connect", () => controller.connect()),
     vscode.commands.registerCommand("aiTokenChecker.disconnect", () => controller.disconnect()),
+    vscode.commands.registerCommand("aiTokenChecker.pickProvider", () => showProviderPicker(controller)),
     vscode.commands.registerCommand("aiTokenChecker.showGauge", async () => {
       await vscode.commands.executeCommand("workbench.view.extension.aiTokenChecker");
       await vscode.commands.executeCommand("aiTokenChecker.gauge.focus");
@@ -49,6 +50,36 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {}
+
+type ProviderPickerItem = vscode.QuickPickItem & {
+  provider?: ProviderId;
+  action?: "refresh" | "details";
+};
+
+async function showProviderPicker(controller: ProviderController): Promise<void> {
+  const selected = controller.state.selectedProvider;
+  const items: ProviderPickerItem[] = [
+    { label: "$(sparkle) Claude Code", description: selected === "claude" ? "Selected" : "", provider: "claude" },
+    { label: "$(code) Codex", description: selected === "codex" ? "Selected" : "", provider: "codex" },
+    { label: "$(github) GitHub Copilot", description: selected === "copilot" ? "Selected" : "", provider: "copilot" },
+    { label: "Actions", kind: vscode.QuickPickItemKind.Separator },
+    { label: "$(refresh) Refresh selected provider", action: "refresh" },
+    { label: "$(open-preview) Open detailed gauge", action: "details" }
+  ];
+  const choice = await vscode.window.showQuickPick(items, {
+    title: "AI Token Checker",
+    placeHolder: "Choose a provider or action",
+    matchOnDescription: true
+  });
+  if (!choice || choice.kind === vscode.QuickPickItemKind.Separator) return;
+  if (choice.provider) {
+    await controller.select(choice.provider);
+    if (!controller.state.connected) await controller.connect();
+    return;
+  }
+  if (choice.action === "refresh") await controller.refresh();
+  else if (choice.action === "details") await vscode.commands.executeCommand("aiTokenChecker.showGauge");
+}
 
 function resolveCodexExecutable(): string {
   const configured = vscode.workspace.getConfiguration("aiTokenChecker.codex").get<string>("executable", "codex").trim();

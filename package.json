@@ -2,7 +2,7 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "publisher": "jamesbooz",
   "license": "UNLICENSED",
@@ -28,11 +28,18 @@
     "onCommand:aiTokenChecker.refresh",
     "onCommand:aiTokenChecker.connect",
     "onCommand:aiTokenChecker.disconnect",
+    "onCommand:aiTokenChecker.pickProvider",
     "onCommand:aiTokenChecker.setupClaude",
     "onCommand:aiTokenChecker.removeClaudeBridge"
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "aiTokenChecker.pickProvider",
+        "title": "Choose AI Provider",
+        "category": "AI Token Checker",
+        "icon": "$(dashboard)"
+      },
       {
         "command": "aiTokenChecker.showGauge",
         "title": "Show Usage Gauge",
@@ -89,7 +96,7 @@
     "menus": {
       "editor/title": [
         {
-          "command": "aiTokenChecker.showGauge",
+          "command": "aiTokenChecker.pickProvider",
           "group": "navigation@100"
         }
       ],
