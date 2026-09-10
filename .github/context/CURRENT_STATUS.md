@@ -8,7 +8,7 @@ Last verified: 2026-09-11 (Asia/Manila)
 - Publisher value in the manifest: `jamesbooz`; Marketplace publisher ownership is not yet confirmed.
 - Repository default branch: `master`.
 - Active work branch: `feature/compact-top-gauge`.
-- The feature branch is 10 commits ahead of `develop`; `develop` and `master` currently point to the same older base.
+- The feature branch contains the current unmerged implementation; `develop` and `master` currently point to the same older base. Verify the live ahead/behind count with Git rather than recording a volatile number here.
 - The GitHub repository is public.
 - No VS Code Marketplace release has been published.
 - The exact Marketplace extension ID `jamesbooz.ai-token-checker` had no match when checked on 2026-09-11, but availability is not reserved until publication.
