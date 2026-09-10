@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { isAbsolute, join, relative, resolve } from "node:path";
 import { claudeSnapshotPath, removeClaudeBridge, setupClaudeBridge } from "./claudeSetup";
 import { ProviderController } from "./controller";
 import type { ProviderAdapter, ProviderId } from "./model";
@@ -59,9 +59,24 @@ type ProviderPickerItem = vscode.QuickPickItem & {
 async function showProviderPicker(controller: ProviderController): Promise<void> {
   const selected = controller.state.selectedProvider;
   const items: ProviderPickerItem[] = [
-    { label: "$(sparkle) Claude Code", description: selected === "claude" ? "Selected" : "", provider: "claude" },
-    { label: "$(code) Codex", description: selected === "codex" ? "Selected" : "", provider: "codex" },
-    { label: "$(github) GitHub Copilot", description: selected === "copilot" ? "Selected" : "", provider: "copilot" },
+    {
+      label: "Claude Code",
+      iconPath: providerIcon("Anthropic.claude-code", new vscode.ThemeIcon("sparkle")),
+      description: selected === "claude" ? "Selected" : "",
+      provider: "claude"
+    },
+    {
+      label: "Codex",
+      iconPath: providerIcon("openai.chatgpt", new vscode.ThemeIcon("code")),
+      description: selected === "codex" ? "Selected" : "",
+      provider: "codex"
+    },
+    {
+      label: "GitHub Copilot",
+      iconPath: providerIcon("GitHub.copilot-chat", new vscode.ThemeIcon("github")),
+      description: selected === "copilot" ? "Selected" : "",
+      provider: "copilot"
+    },
     { label: "Actions", kind: vscode.QuickPickItemKind.Separator },
     { label: "$(refresh) Refresh selected provider", action: "refresh" },
     { label: "$(open-preview) Open detailed gauge", action: "details" }
@@ -79,6 +94,23 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
   }
   if (choice.action === "refresh") await controller.refresh();
   else if (choice.action === "details") await vscode.commands.executeCommand("aiTokenChecker.showGauge");
+}
+
+function providerIcon(extensionId: string, fallback: vscode.ThemeIcon): vscode.Uri | vscode.ThemeIcon {
+  const providerExtension = vscode.extensions.getExtension(extensionId);
+  const packageJson: unknown = providerExtension?.packageJSON;
+  if (!providerExtension || !packageJson || typeof packageJson !== "object" || Array.isArray(packageJson)) return fallback;
+  const icon = (packageJson as Record<string, unknown>).icon;
+  if (typeof icon !== "string" || !icon.trim()) return fallback;
+
+  const candidate = resolve(providerExtension.extensionPath, icon);
+  const childPath = relative(providerExtension.extensionPath, candidate);
+  if (!childPath || childPath.startsWith("..") || isAbsolute(childPath)) return fallback;
+  try {
+    return statSync(candidate).isFile() ? vscode.Uri.file(candidate) : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function resolveCodexExecutable(): string {

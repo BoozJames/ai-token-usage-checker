@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.7
+
+- The provider Quick Pick uses artwork from installed official provider extensions, with VS Code theme-icon fallbacks.
+- Installation guidance now calls out the Claude Code 2.1.251 minimum for 5-hour and 7-day quota fields.
+- Provider trademark ownership and non-endorsement are documented.
+
 ## 0.1.6
 
 - Claude's empty state now explains that a CLI status-line event and Claude Code 2.1.251+ are required for quota windows.

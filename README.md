@@ -26,6 +26,15 @@ npm run package
 code --install-extension ai-token-checker.vsix
 ```
 
+Claude users should update the Claude Code CLI before connecting:
+
+```text
+claude update
+claude --version
+```
+
+Claude Code 2.1.251 or newer is required for provider-reported 5-hour and 7-day quota fields. A newly installed current Claude Code CLI should satisfy this requirement, but the version check remains useful for package-manager, managed, and older installations.
+
 ## Connect a provider
 
 Open the AI Token Checker activity-bar view, select a provider, and choose **Connect**. Each integration remains off until you accept its provider-specific consent prompt.
@@ -63,6 +72,8 @@ After consent, the extension requests a GitHub session through VS Code's officia
 Requires Node.js 20.19+ and VS Code 1.95+. Press `F5` to start the Extension Development Host.
 
 The packaged `PRIVACY.md`, `ACCURACY.md`, `SECURITY.md`, and `CONTRIBUTING.md` files contain the detailed policies.
+
+The provider Quick Pick displays artwork directly from the installed official Claude Code, OpenAI Codex, and GitHub Copilot extensions. Those files are not copied into AI Token Checker. A VS Code theme icon is used when an official provider extension is unavailable.
 
 ## Current scope
 

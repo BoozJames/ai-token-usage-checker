@@ -2,7 +2,7 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "publisher": "jamesbooz",
   "license": "UNLICENSED",
