@@ -4,7 +4,7 @@ AI Token Checker has no developer-controlled telemetry or analytics.
 
 ## Stored data
 
-VS Code global state stores only the selected provider, provider consent flags, and the exact Claude bridge command installed by this extension. Usage snapshots remain in memory. The Claude bridge writes one allowlisted metric snapshot in VS Code global storage and replaces it atomically; it is not a history database.
+VS Code global state stores only the selected provider, provider consent flags, the exact Claude bridge command installed by this extension, and any previous Claude status-line setting needed for rollback. When composition is approved, the previous command is also stored in a permission-restricted bridge configuration file. Usage snapshots remain in memory. The Claude bridge writes one allowlisted metric snapshot in VS Code global storage and replaces it atomically; it is not a history database.
 
 ## Data never read or stored
 

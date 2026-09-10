@@ -127,7 +127,9 @@ export function normalizeCopilot(
       observedAt: observedAt.toISOString(),
       source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
       quotaWindows,
-      ...(quotaWindows.length ? {} : { message: "No bounded Copilot quota was reported; session tokens are unavailable." })
+      ...(quotaWindows.length ? {} : {
+        message: "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
+      })
     };
 }
 

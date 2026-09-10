@@ -36,4 +36,16 @@ describe("gauge selection", () => {
     assert.equal(clampPercentage(140), 100);
     assert.equal(clampPercentage(Number.NaN), 0);
   });
+
+  it("ignores expired quota windows before selecting a token fallback", () => {
+    assert.deepEqual(selectGauge({
+      ...base,
+      quotaWindows: [{ id: "expired", label: "Expired", usedPercent: 100, resetsAt: "2026-09-10T10:00:00Z" }],
+      tokenUsage: { scope: "context", total: 25, limit: 100 }
+    }, Date.parse("2026-09-10T11:00:00Z")), {
+      determinate: true,
+      value: 25,
+      label: "Context window"
+    });
+  });
 });

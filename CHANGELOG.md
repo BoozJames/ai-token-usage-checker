@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4
+
+- Active quota windows take precedence over token totals; expired windows are excluded centrally.
+- Codex 300-minute and 10,080-minute windows are labelled 5-hour and Weekly limits.
+- Token totals are hidden while a quota window is available.
+- Claude bridge can compose with an existing command after confirmation and restore it on removal.
+
 ## 0.1.3
 
 - Initial private release.

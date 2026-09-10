@@ -30,6 +30,7 @@ describe("Codex normalization", () => {
       }
     }, { summary: { lifetimeTokens: 42_000 } });
     assert.equal(snapshot.quotaWindows.length, 2);
+    assert.equal(snapshot.quotaWindows[0]?.label, "5-hour limit");
     assert.equal(snapshot.quotaWindows[1]?.label, "Reviews primary");
     assert.deepEqual(snapshot.tokenUsage, { scope: "lifetime", total: 42_000 });
   });

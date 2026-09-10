@@ -43,14 +43,14 @@
       value.textContent = "—";
     }
     label.textContent = data.gauge.label;
-    tokens.textContent = formatTokens(data.snapshot.tokenUsage);
+    tokens.textContent = formatTokens(data.snapshot.tokenUsage, data.snapshot.quotaWindows.length > 0);
     reset.textContent = data.resetAt ? `Resets ${new Date(data.resetAt).toLocaleString()}` : "";
     source.textContent = `${data.snapshot.state} · ${data.snapshot.source.label} · ${data.snapshot.source.accuracy} · ${relativeTime(data.snapshot.observedAt)}`;
     message.textContent = data.snapshot.message || "";
   });
 
-  function formatTokens(usage) {
-    if (!usage) return "";
+  function formatTokens(usage, hasQuota) {
+    if (!usage || hasQuota) return "";
     const total = new Intl.NumberFormat().format(usage.total);
     const limit = usage.limit ? ` / ${new Intl.NumberFormat().format(usage.limit)}` : "";
     return `${capitalize(usage.scope)} tokens: ${total}${limit}`;

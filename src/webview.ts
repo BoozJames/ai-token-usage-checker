@@ -46,12 +46,9 @@ export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Dis
   private postState(state: ControllerState): void {
     const snapshot = state.snapshot;
     const gauge = selectGauge(snapshot);
-    const selectedWindow = snapshot.quotaWindows
-      .filter((window) => Number.isFinite(window.usedPercent))
-      .sort((a, b) => b.usedPercent - a.usedPercent)[0];
     void this.view?.webview.postMessage({
       type: "state", selectedProvider: state.selectedProvider, connected: state.connected,
-      snapshot, gauge, resetAt: selectedWindow?.resetsAt
+      snapshot, gauge, resetAt: gauge.determinate ? gauge.resetsAt : undefined
     });
   }
 
