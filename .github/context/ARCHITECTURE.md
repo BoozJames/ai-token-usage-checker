@@ -37,4 +37,4 @@
 - Update `PRIVACY.md`, `SECURITY.md`, or `ACCURACY.md` whenever collection, process, network, or metric semantics change.
 - Keep dependencies minimal, pinned where security-sensitive, and audited.
 - Inspect packaged VSIX contents before every release.
-
+- Scan the current workspace and full Git history for credentials, private keys, provider credential/snapshot files, and machine-specific user paths before every public release.

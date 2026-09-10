@@ -24,6 +24,8 @@ The current feature branch passed on 2026-09-11:
 - VS Code Extension Host smoke test.
 - Dependency audit with zero reported vulnerabilities.
 
+A workspace and full-history sensitive-data audit on 2026-09-11 found no credential-shaped secrets, private keys, bearer tokens, JWTs, provider credential/snapshot files, or machine-specific user paths. CI uses the repository scanner against full Git history; this is a preventive check, not permission to place secrets in the repository temporarily.
+
 The platform-specific Windows VSIX is approximately 44 MB because the official Copilot SDK includes a native runtime. Linux and macOS builds are produced in CI on their native runners.
 
 ## User interface
@@ -73,4 +75,3 @@ The code is not ready to publish to the Marketplace until all items below are re
 - Decide whether the first listing is Preview or stable.
 - Merge through `feature` → `develop` → `master` by pull request before tagging.
 - Add Marketplace trusted publishing only after the publisher and release policy are confirmed.
-
