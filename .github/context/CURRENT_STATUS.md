@@ -15,6 +15,9 @@ Last verified: 2026-09-11 (Asia/Manila)
 - The GitHub repository is public.
 - No VS Code Marketplace release has been published yet.
 - The exact Marketplace extension ID `jamesbooz.ai-token-checker` had no match when checked on 2026-09-11, but availability is not reserved until publication.
+- Tag `v0.3.0` exists on `master`. Its three native build jobs passed, but the
+  GitHub release job failed because the GitHub CLI was asked to infer a
+  repository without a checkout. No GitHub release was created by that run.
 
 ## Validation
 
@@ -80,6 +83,8 @@ The platform-specific Windows VSIX is approximately 44 MB because the official C
   creates a GitHub pre-release.
 - Optional Marketplace publishing uses OIDC and remains disabled until trusted
   publishing is configured and the repository variable is enabled.
-- Release is still blocked on the required pull requests, a tag on `master`,
-  and Marketplace trusted-publishing configuration. Do not publish from the
-  feature branch.
+- The release workflow supports a validated manual recovery run for an existing
+  tag and passes the repository explicitly to the GitHub CLI.
+- GitHub release recovery is blocked only on merging the workflow fix through
+  the required pull requests. Marketplace publishing remains separately blocked
+  on trusted-publishing configuration. Do not publish from a working branch.

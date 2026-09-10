@@ -3,9 +3,18 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild and publish
+        required: true
+        type: string
 
 permissions:
   contents: read
+
+env:
+  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   verify-tag:
@@ -13,13 +22,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
       - name: Verify tag commit is on master
         run: |
           git fetch origin master
-          git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+          git merge-base --is-ancestor "${RELEASE_TAG}^{commit}" origin/master
       - name: Verify tag matches package version
         run: node scripts/verify-release-tag.mjs
+        env:
+          GITHUB_REF_NAME: ${{ env.RELEASE_TAG }}
 
   build:
     needs: verify-tag
@@ -37,6 +49,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ env.RELEASE_TAG }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -68,7 +81,7 @@ jobs:
       - name: Create GitHub pre-release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" artifacts/* --verify-tag --generate-notes --prerelease --title "AI Token Checker ${GITHUB_REF_NAME} (Preview)"
+        run: gh release create "${RELEASE_TAG}" artifacts/* --repo "${GITHUB_REPOSITORY}" --verify-tag --generate-notes --prerelease --title "AI Token Checker ${RELEASE_TAG} (Preview)"
 
   publish-marketplace:
     needs: build
@@ -79,6 +92,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20.19.0

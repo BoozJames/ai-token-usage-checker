@@ -48,3 +48,12 @@ The first Marketplace upload is a pre-release. VS Code Marketplace versions
 must use `major.minor.patch`; suffixes such as `-alpha` are not supported. This
 project uses odd minor versions (`0.3.x`) for previews and reserves the next
 even minor line (`0.4.x`) for a stable release.
+
+## Recovering a failed release job
+
+If a tag-triggered run builds successfully but fails before creating its GitHub
+release, first merge the workflow fix through `develop` and `master`. Then open
+**Actions → Release → Run workflow**, enter the existing tag such as `v0.3.0`,
+and run it from `master`. The workflow checks out and validates the tagged
+source, rebuilds its platform packages, and creates the missing release. Do not
+move or recreate an existing release tag.
