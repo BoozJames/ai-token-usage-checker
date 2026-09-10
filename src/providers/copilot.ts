@@ -21,7 +21,10 @@ export class CopilotAdapter implements ProviderAdapter {
   readonly id = "copilot" as const;
   private client: CopilotClientHandle | undefined;
 
-  constructor(private readonly getGitHubToken: () => Promise<string>) {}
+  constructor(
+    private readonly getGitHubToken: () => Promise<string>,
+    private readonly log?: (message: string) => void
+  ) {}
 
   async detect(): Promise<ProviderAvailability> {
     return { available: true };
@@ -61,6 +64,7 @@ export class CopilotAdapter implements ProviderAdapter {
     if (signal.aborted) throw new Error("Refresh cancelled");
     try {
       const result = await this.client.rpc.account.getQuota({});
+      this.log?.(`getQuota raw response: ${JSON.stringify(result.quotaSnapshots)}`);
       return normalizeCopilot(result.quotaSnapshots);
     } catch (error) {
       if (error instanceof Error && /not authenticated/i.test(error.message)) {
@@ -101,6 +105,7 @@ interface CopilotQuota {
   entitlementRequests?: number;
   usedRequests?: number;
   resetDate?: string;
+  hasQuota?: boolean;
 }
 
 export function normalizeCopilot(
@@ -108,22 +113,17 @@ export function normalizeCopilot(
   observedAt = new Date()
 ): ProviderSnapshot {
     const quotaWindows: QuotaWindow[] = [];
-    let expiredBoundedQuotas = 0;
     for (const [id, quota] of Object.entries(quotaSnapshots)) {
-      if (!quota || quota.isUnlimitedEntitlement) continue;
-      const resetTime = quota.resetDate ? Date.parse(quota.resetDate) : undefined;
-      if (resetTime !== undefined && Number.isFinite(resetTime) && resetTime <= observedAt.getTime()) {
-        expiredBoundedQuotas += 1;
-        continue;
-      }
+      if (!quota || quota.isUnlimitedEntitlement || quota.hasQuota === false) continue;
       const usedPercent = 100 - quota.remainingPercentage;
       if (!Number.isFinite(usedPercent)) continue;
-      quotaWindows.push({
-        id,
-        label: quotaLabel(id),
-        usedPercent,
-        ...(resetTime !== undefined && Number.isFinite(resetTime) ? { resetsAt: new Date(resetTime).toISOString() } : {})
-      });
+      // The SDK's resetDate is only trustworthy when it is actually in the future;
+      // some accounts report it as the moment of the request itself, which is not a real period boundary.
+      const resetTime = quota.resetDate ? Date.parse(quota.resetDate) : undefined;
+      const resetsAt = resetTime !== undefined && Number.isFinite(resetTime) && resetTime > observedAt.getTime()
+        ? new Date(resetTime).toISOString()
+        : undefined;
+      quotaWindows.push({ id, label: quotaLabel(id), usedPercent, ...(resetsAt ? { resetsAt } : {}) });
     }
     return {
       providerId: "copilot",
@@ -132,9 +132,7 @@ export function normalizeCopilot(
       source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
       quotaWindows,
       ...(quotaWindows.length ? {} : {
-        message: expiredBoundedQuotas
-          ? "The previous Copilot quota period has just reset, but GitHub has not reported the new period yet. Refresh again shortly."
-          : "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
+        message: "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
       })
     };
 }

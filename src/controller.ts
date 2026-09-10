@@ -126,14 +126,25 @@ export class ProviderController implements vscode.Disposable {
     try {
       const snapshot = await adapter.refresh(abort.signal);
       if (abort.signal.aborted || provider !== this.selectedProvider) return;
+      if (snapshot.state === "unavailable" && this.lastSuccessful.has(provider)) {
+        // A provider-reported "unavailable" result after we've already seen good data is more likely
+        // a transient upstream hiccup than a real change in plan/entitlement, so keep showing the last
+        // known usage (clearly marked stale) instead of discarding it.
+        this.fallbackToStale(provider, snapshot.message);
+        return;
+      }
       this.setSnapshot(snapshot);
     } catch (error) {
       if (abort.signal.aborted) return;
-      const previous = this.lastSuccessful.get(provider);
-      this.setSnapshot(previous
-        ? { ...previous, state: "stale", message: sanitizeError(error) }
-        : { ...placeholder(provider, true), state: "error", message: sanitizeError(error) });
+      this.fallbackToStale(provider, sanitizeError(error));
     }
+  }
+
+  private fallbackToStale(provider: ProviderId, message: string | undefined): void {
+    const previous = this.lastSuccessful.get(provider);
+    this.setSnapshot(previous
+      ? { ...previous, state: "stale", message: message ?? "Refresh failed; showing the last known usage." }
+      : { ...placeholder(provider, true), state: "error", message: message ?? "Refresh failed." });
   }
 
   dispose(): void {

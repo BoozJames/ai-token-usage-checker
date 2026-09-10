@@ -12,6 +12,7 @@ import { UsageStatusBar } from "./statusBar";
 import { GaugeViewProvider } from "./webview";
 
 export function activate(context: vscode.ExtensionContext): void {
+  const output = vscode.window.createOutputChannel("AI Token Checker");
   const adapters = new Map<ProviderId, ProviderAdapter>();
   adapters.set("claude", new ClaudeAdapter({
     snapshotPath: claudeSnapshotPath(context),
@@ -22,13 +23,13 @@ export function activate(context: vscode.ExtensionContext): void {
   adapters.set("copilot", new CopilotAdapter(async () => {
     const session = await vscode.authentication.getSession("github", ["read:user"], { createIfNone: true });
     return session.accessToken;
-  }));
+  }, (message) => output.appendLine(message)));
   const controller = new ProviderController(context, adapters);
   const viewProvider = new GaugeViewProvider(context, controller);
   const statusBar = new UsageStatusBar(controller);
 
   context.subscriptions.push(
-    controller, viewProvider, statusBar,
+    controller, viewProvider, statusBar, output,
     vscode.window.registerWebviewViewProvider("aiTokenChecker.gauge", viewProvider, { webviewOptions: { retainContextWhenHidden: false } }),
     vscode.commands.registerCommand("aiTokenChecker.refresh", () => controller.refresh()),
     vscode.commands.registerCommand("aiTokenChecker.connect", () => controller.connect()),

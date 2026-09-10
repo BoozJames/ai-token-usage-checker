@@ -58,7 +58,9 @@ describe("Copilot normalization", () => {
     assert.equal(snapshot.state, "unavailable");
   });
 
-  it("ignores expired quota windows and uses current dashboard labels", () => {
+  it("still shows a quota window when its resetDate has already passed", () => {
+    // The SDK has been observed reporting resetDate as the moment of the request itself
+    // rather than a real period boundary, so a past resetDate must not hide real usage data.
     const snapshot = normalizeCopilot({
       premium_interactions: {
         isUnlimitedEntitlement: false,
@@ -71,20 +73,48 @@ describe("Copilot normalization", () => {
         resetDate: "2026-10-01T00:00:00Z"
       }
     }, new Date("2026-09-10T13:00:00Z"));
-    assert.equal(snapshot.quotaWindows.length, 1);
-    assert.equal(snapshot.quotaWindows[0]?.label, "Inline Suggestions");
-    assert.equal(snapshot.quotaWindows[0]?.usedPercent, 4);
+    assert.equal(snapshot.quotaWindows.length, 2);
+    const premium = snapshot.quotaWindows.find((window) => window.id === "premium_interactions");
+    assert.equal(premium?.usedPercent, 100);
+    assert.equal(premium?.resetsAt, undefined);
+    const completions = snapshot.quotaWindows.find((window) => window.id === "completions");
+    assert.equal(completions?.label, "Inline Suggestions");
+    assert.equal(completions?.usedPercent, 4);
+    assert.equal(completions?.resetsAt, "2026-10-01T00:00:00.000Z");
   });
 
-  it("identifies the transition after a quota reset", () => {
+  it("skips buckets the account has no entitlement for", () => {
     const snapshot = normalizeCopilot({
-      completions: {
+      premium_interactions: {
         isUnlimitedEntitlement: false,
-        remainingPercentage: 96,
-        resetDate: "2026-09-10T14:43:11Z"
+        remainingPercentage: 0,
+        entitlementRequests: 0,
+        hasQuota: false,
+        resetDate: "2026-09-10T13:00:00Z"
       }
-    }, new Date("2026-09-10T14:43:12Z"));
+    }, new Date("2026-09-10T13:00:00Z"));
     assert.equal(snapshot.state, "unavailable");
-    assert.match(snapshot.message ?? "", /just reset/);
+    assert.equal(snapshot.quotaWindows.length, 0);
+  });
+
+  it("normalizes a real Free-plan getQuota response", () => {
+    const snapshot = normalizeCopilot({
+      chat: {
+        isUnlimitedEntitlement: false, entitlementRequests: 200, usedRequests: 0,
+        remainingPercentage: 100, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: true
+      },
+      completions: {
+        isUnlimitedEntitlement: false, entitlementRequests: 2000, usedRequests: 90,
+        remainingPercentage: 95.5, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: true
+      },
+      premium_interactions: {
+        isUnlimitedEntitlement: false, entitlementRequests: 0, usedRequests: 0,
+        remainingPercentage: 0, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: false
+      }
+    }, new Date("2026-09-10T16:59:26.380Z"));
+    assert.equal(snapshot.state, "ready");
+    assert.equal(snapshot.quotaWindows.length, 2);
+    assert.equal(snapshot.quotaWindows.find((window) => window.id === "completions")?.usedPercent, 4.5);
+    assert.equal(snapshot.quotaWindows.some((window) => window.id === "premium_interactions"), false);
   });
 });
