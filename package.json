@@ -2,7 +2,7 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "0.1.0",
+  "version": "0.1.8",
   "private": true,
   "publisher": "jamesbooz",
   "license": "UNLICENSED",
@@ -23,15 +23,29 @@
   ],
   "main": "./dist/extension.js",
   "activationEvents": [
+    "onStartupFinished",
     "onView:aiTokenChecker.gauge",
     "onCommand:aiTokenChecker.refresh",
     "onCommand:aiTokenChecker.connect",
     "onCommand:aiTokenChecker.disconnect",
+    "onCommand:aiTokenChecker.pickProvider",
     "onCommand:aiTokenChecker.setupClaude",
     "onCommand:aiTokenChecker.removeClaudeBridge"
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "aiTokenChecker.pickProvider",
+        "title": "Choose AI Provider",
+        "category": "AI Token Checker",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "aiTokenChecker.showGauge",
+        "title": "Show Usage Gauge",
+        "category": "AI Token Checker",
+        "icon": "$(dashboard)"
+      },
       {
         "command": "aiTokenChecker.refresh",
         "title": "Refresh",
@@ -80,6 +94,12 @@
       ]
     },
     "menus": {
+      "editor/title": [
+        {
+          "command": "aiTokenChecker.pickProvider",
+          "group": "navigation@100"
+        }
+      ],
       "view/title": [
         {
           "command": "aiTokenChecker.refresh",
@@ -104,6 +124,12 @@
           "maximum": 900,
           "scope": "application",
           "description": "Minimum interval between provider quota refreshes."
+        },
+        "aiTokenChecker.statusBar.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Show a compact usage indicator near the center of the bottom status bar and keep the consented provider refreshed."
         }
       }
     }
@@ -115,7 +141,7 @@
     "lint": "eslint src test esbuild.mjs",
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit",
-    "test:unit": "node --import tsx --test test/unit/*.test.ts",
+    "test:unit": "node scripts/test-unit.mjs",
     "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
     "compile:tests": "tsc -p tsconfig.test.json",
     "package": "npm run check && vsce package --out ai-token-checker.vsix",

@@ -15,6 +15,7 @@ export class ProviderController implements vscode.Disposable {
   private selectedProvider: ProviderId;
   private connected = false;
   private visible = false;
+  private statusBarActive = false;
   private activeRefresh: AbortController | undefined;
   private lastSuccessful = new Map<ProviderId, ProviderSnapshot>();
   private currentSnapshot: ProviderSnapshot;
@@ -36,7 +37,18 @@ export class ProviderController implements vscode.Disposable {
 
   async setVisible(visible: boolean): Promise<void> {
     this.visible = visible;
-    if (!visible) {
+    if (!this.isActive()) {
+      this.stopTimer();
+      await this.disconnectAdapters();
+      return;
+    }
+    if (this.hasConsent(this.selectedProvider)) await this.connect(false);
+    else this.emit();
+  }
+
+  async setStatusBarActive(active: boolean): Promise<void> {
+    this.statusBarActive = active;
+    if (!this.isActive()) {
       this.stopTimer();
       await this.disconnectAdapters();
       return;
@@ -54,7 +66,7 @@ export class ProviderController implements vscode.Disposable {
     this.currentSnapshot = this.lastSuccessful.get(provider) ?? placeholder(provider, false);
     await this.context.globalState.update(SELECTED_KEY, provider);
     this.emit();
-    if (this.visible && this.hasConsent(provider)) await this.connect(false);
+    if (this.isActive() && this.hasConsent(provider)) await this.connect(false);
   }
 
   async connect(prompt = true): Promise<void> {
@@ -80,7 +92,7 @@ export class ProviderController implements vscode.Disposable {
       return;
     }
     const result = await adapter.connect();
-    if (!this.visible || provider !== this.selectedProvider) {
+    if (!this.isActive() || provider !== this.selectedProvider) {
       await adapter.disconnect();
       return;
     }
@@ -104,7 +116,7 @@ export class ProviderController implements vscode.Disposable {
   }
 
   async refresh(): Promise<void> {
-    if (!this.visible || !this.connected) return;
+    if (!this.isActive() || !this.connected) return;
     const provider = this.selectedProvider;
     const adapter = this.adapters.get(provider);
     if (!adapter) return;
@@ -114,14 +126,25 @@ export class ProviderController implements vscode.Disposable {
     try {
       const snapshot = await adapter.refresh(abort.signal);
       if (abort.signal.aborted || provider !== this.selectedProvider) return;
+      if (snapshot.state === "unavailable" && this.lastSuccessful.has(provider)) {
+        // A provider-reported "unavailable" result after we've already seen good data is more likely
+        // a transient upstream hiccup than a real change in plan/entitlement, so keep showing the last
+        // known usage (clearly marked stale) instead of discarding it.
+        this.fallbackToStale(provider, snapshot.message);
+        return;
+      }
       this.setSnapshot(snapshot);
     } catch (error) {
       if (abort.signal.aborted) return;
-      const previous = this.lastSuccessful.get(provider);
-      this.setSnapshot(previous
-        ? { ...previous, state: "stale", message: sanitizeError(error) }
-        : { ...placeholder(provider, true), state: "error", message: sanitizeError(error) });
+      this.fallbackToStale(provider, sanitizeError(error));
     }
+  }
+
+  private fallbackToStale(provider: ProviderId, message: string | undefined): void {
+    const previous = this.lastSuccessful.get(provider);
+    this.setSnapshot(previous
+      ? { ...previous, state: "stale", message: message ?? "Refresh failed; showing the last known usage." }
+      : { ...placeholder(provider, true), state: "error", message: message ?? "Refresh failed." });
   }
 
   dispose(): void {
@@ -133,6 +156,9 @@ export class ProviderController implements vscode.Disposable {
 
   private hasConsent(provider: ProviderId): boolean {
     return this.context.globalState.get<boolean>(`${CONSENT_PREFIX}${provider}`) === true;
+  }
+  private isActive(): boolean {
+    return this.visible || this.statusBarActive;
   }
   private startTimer(): void {
     this.stopTimer();
@@ -173,5 +199,5 @@ function validProvider(value: unknown): ProviderId | undefined {
 function consentMessage(provider: ProviderId): string {
   if (provider === "claude") return "Allow AI Token Checker to read the allowlisted local snapshot created by its Claude status-line bridge?";
   if (provider === "codex") return "Allow AI Token Checker to start the local Codex app-server and request account quota and token summaries? Codex may contact OpenAI using its own login.";
-  return "Allow AI Token Checker to start the official Copilot SDK runtime and request account quota? Copilot may contact GitHub using its own login.";
+  return "Allow AI Token Checker to request a GitHub sign-in, start the official Copilot SDK runtime, and request account quota? The token stays in memory and is never logged or stored by this extension.";
 }

@@ -34,7 +34,7 @@ export class CodexAdapter implements ProviderAdapter {
       return { connected: true };
     } catch (error) {
       await this.disconnect();
-      return { connected: false, message: error instanceof Error ? error.message : "Could not start Codex." };
+      return { connected: false, message: codexConnectionMessage(error) };
     }
   }
 
@@ -166,6 +166,13 @@ export class CodexAdapter implements ProviderAdapter {
   }
 }
 
+function codexConnectionMessage(error: unknown): string {
+  if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+    return "Codex executable was not found. Install Codex or set AI Token Checker: Codex Executable to its absolute path.";
+  }
+  return error instanceof Error ? error.message : "Could not start Codex.";
+}
+
 export function normalizeCodex(limitsValue: unknown, usageValue: unknown): ProviderSnapshot {
   const limitsResult = record(limitsValue);
   const buckets = record(limitsResult.rateLimitsByLimitId);
@@ -207,11 +214,17 @@ function addWindow(target: QuotaWindow[], id: string, label: string, value: unkn
   const durationMinutes = nonNegativeNumber(window.windowDurationMins);
   target.push({
     id,
-    label,
+    label: quotaWindowLabel(durationMinutes, label),
     usedPercent,
     ...(resetsAtSeconds !== undefined ? { resetsAt: new Date(resetsAtSeconds * 1000).toISOString() } : {}),
     ...(durationMinutes !== undefined ? { durationMinutes } : {})
   });
+}
+
+function quotaWindowLabel(durationMinutes: number | undefined, fallback: string): string {
+  if (durationMinutes === 300) return "5-hour limit";
+  if (durationMinutes === 10_080) return "Weekly limit";
+  return fallback;
 }
 
 function record(value: unknown): Record<string, unknown> {

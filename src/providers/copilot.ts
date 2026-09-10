@@ -21,6 +21,11 @@ export class CopilotAdapter implements ProviderAdapter {
   readonly id = "copilot" as const;
   private client: CopilotClientHandle | undefined;
 
+  constructor(
+    private readonly getGitHubToken: () => Promise<string>,
+    private readonly log?: (message: string) => void
+  ) {}
+
   async detect(): Promise<ProviderAvailability> {
     return { available: true };
   }
@@ -28,8 +33,15 @@ export class CopilotAdapter implements ProviderAdapter {
   async connect(): Promise<ConnectionResult> {
     if (this.client) return { connected: true };
     const { CopilotClient } = await import("@github/copilot-sdk");
+    let gitHubToken: string;
+    try {
+      gitHubToken = await this.getGitHubToken();
+    } catch {
+      return { connected: false, message: "GitHub sign-in was cancelled or unavailable." };
+    }
     const client: CopilotClientHandle = new CopilotClient({
-      useLoggedInUser: true,
+      gitHubToken,
+      useLoggedInUser: false,
       logLevel: "none",
       enableRemoteSessions: false,
       clientInfo: { applicationName: "ai-token-checker", applicationVersion: "0.1.0" }
@@ -50,8 +62,16 @@ export class CopilotAdapter implements ProviderAdapter {
   async refresh(signal: AbortSignal): Promise<ProviderSnapshot> {
     if (!this.client) throw new Error("GitHub Copilot is disconnected");
     if (signal.aborted) throw new Error("Refresh cancelled");
-    const result = await this.client.rpc.account.getQuota({});
-    return normalizeCopilot(result.quotaSnapshots);
+    try {
+      const result = await this.client.rpc.account.getQuota({});
+      this.log?.(`getQuota raw response: ${JSON.stringify(result.quotaSnapshots)}`);
+      return normalizeCopilot(result.quotaSnapshots);
+    } catch (error) {
+      if (error instanceof Error && /not authenticated/i.test(error.message)) {
+        throw new Error("GitHub authentication expired. Disconnect and connect again to sign in.", { cause: error });
+      }
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {
@@ -82,32 +102,55 @@ export class CopilotAdapter implements ProviderAdapter {
 interface CopilotQuota {
   isUnlimitedEntitlement: boolean;
   remainingPercentage: number;
+  entitlementRequests?: number;
+  usedRequests?: number;
   resetDate?: string;
+  hasQuota?: boolean;
 }
 
-export function normalizeCopilot(quotaSnapshots: Record<string, CopilotQuota | undefined>): ProviderSnapshot {
+export function normalizeCopilot(
+  quotaSnapshots: Record<string, CopilotQuota | undefined>,
+  observedAt = new Date()
+): ProviderSnapshot {
     const quotaWindows: QuotaWindow[] = [];
     for (const [id, quota] of Object.entries(quotaSnapshots)) {
-      if (!quota || quota.isUnlimitedEntitlement) continue;
+      if (!quota || quota.isUnlimitedEntitlement || quota.hasQuota === false) continue;
       const usedPercent = 100 - quota.remainingPercentage;
       if (!Number.isFinite(usedPercent)) continue;
+      // The SDK's resetDate is only trustworthy when it is actually in the future;
+      // some accounts report it as the moment of the request itself, which is not a real period boundary.
+      const resetTime = quota.resetDate ? Date.parse(quota.resetDate) : undefined;
+      const resetsAt = resetTime !== undefined && Number.isFinite(resetTime) && resetTime > observedAt.getTime()
+        ? new Date(resetTime).toISOString()
+        : undefined;
       quotaWindows.push({
         id,
-        label: humanize(id).slice(0, 80),
+        label: quotaLabel(id),
         usedPercent,
-        ...(quota.resetDate && !Number.isNaN(Date.parse(quota.resetDate)) ? { resetsAt: quota.resetDate } : {})
+        ...(resetsAt ? { resetsAt } : {}),
+        // Inline-suggestion counts churn constantly and are rarely what a user is watching;
+        // let chat/premium-request quotas win the primary gauge whenever they're also active.
+        ...(id === "completions" ? { deprioritized: true } : {})
       });
     }
     return {
       providerId: "copilot",
       state: quotaWindows.length ? "ready" : "unavailable",
-      observedAt: new Date().toISOString(),
+      observedAt: observedAt.toISOString(),
       source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
       quotaWindows,
-      ...(quotaWindows.length ? {} : { message: "No bounded Copilot quota was reported; session tokens are unavailable." })
+      ...(quotaWindows.length ? {} : {
+        message: "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
+      })
     };
 }
 
 function humanize(value: string): string {
   return value.replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function quotaLabel(value: string): string {
+  if (value === "completions") return "Inline Suggestions";
+  if (value === "premium_interactions") return "Premium Interactions";
+  return humanize(value).slice(0, 80);
 }
