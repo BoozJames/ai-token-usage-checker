@@ -141,7 +141,7 @@
     "lint": "eslint src test esbuild.mjs",
     "typecheck": "tsc --noEmit",
     "test": "npm run test:unit",
-    "test:unit": "node --import tsx --test test/unit/*.test.ts",
+    "test:unit": "node scripts/test-unit.mjs",
     "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
     "compile:tests": "tsc -p tsconfig.test.json",
     "package": "npm run check && vsce package --out ai-token-checker.vsix",
