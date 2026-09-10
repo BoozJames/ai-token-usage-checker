@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.5
+
+- The sidebar now lists every active quota window as compact text, including used, remaining, and reset values.
+- Provider token totals remain visible as secondary sidebar details without replacing an available quota gauge.
+- The bottom status item stays compact and continues to show only the selected primary quota.
+
 ## 0.1.4
 
 - Active quota windows take precedence over token totals; expired windows are excluded centrally.

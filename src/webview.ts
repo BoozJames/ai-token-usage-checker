@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import * as vscode from "vscode";
 import type { ProviderId } from "./model";
-import { selectGauge } from "./model";
+import { activeQuotaWindows, selectGauge } from "./model";
 import type { ControllerState, ProviderController } from "./controller";
 
 type InboundMessage =
@@ -46,9 +46,15 @@ export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Dis
   private postState(state: ControllerState): void {
     const snapshot = state.snapshot;
     const gauge = selectGauge(snapshot);
+    const quotaDetails = activeQuotaWindows(snapshot).map((window) => ({
+      label: window.label,
+      usedPercent: window.usedPercent,
+      remainingPercent: 100 - window.usedPercent,
+      resetsAt: window.resetsAt
+    }));
     void this.view?.webview.postMessage({
       type: "state", selectedProvider: state.selectedProvider, connected: state.connected,
-      snapshot, gauge, resetAt: gauge.determinate ? gauge.resetsAt : undefined
+      snapshot, gauge, quotaDetails, resetAt: gauge.determinate ? gauge.resetsAt : undefined
     });
   }
 
@@ -69,7 +75,8 @@ export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Dis
 <p id="reset" class="reset"></p>
 <div class="meter" id="meter" role="progressbar" aria-label="Usage" aria-valuemin="0" aria-valuemax="100"><div class="meter-fill" id="meter-fill"></div></div>
 </section>
-<p id="tokens" class="tokens"></p><p id="source" class="muted"></p><p id="message" class="message"></p>
+<section class="details" aria-labelledby="details-heading"><h2 id="details-heading">Usage details</h2><ul id="quota-details" class="quota-details"></ul><p id="tokens" class="tokens"></p></section>
+<p id="source" class="muted"></p><p id="message" class="message"></p>
 <div class="actions"><button id="connect" type="button">Connect</button><button id="refresh" type="button" class="secondary">Refresh</button><button id="setup-claude" type="button" class="secondary">Set up Claude</button></div>
 </main><script nonce="${nonce}" src="${script}"></script></body></html>`;
   }

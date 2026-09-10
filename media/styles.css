@@ -100,8 +100,28 @@ select:focus, button:focus {
   animation: loading 1.4s ease-in-out infinite;
 }
 
+.details {
+  padding-top: 2px;
+  border-top: 1px solid var(--vscode-widget-border, transparent);
+}
+
+.details h2 {
+  margin: 4px 0 3px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--vscode-descriptionForeground);
+}
+
+.quota-details {
+  margin: 0 0 3px;
+  padding-left: 18px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.82em;
+}
+
+.quota-details li { margin: 2px 0; }
 .tokens, .muted, .message { margin: 0; }
-.tokens { font-size: 0.9em; }
+.tokens { font-size: 0.82em; color: var(--vscode-descriptionForeground); }
 
 .message {
   min-height: 1.2em;

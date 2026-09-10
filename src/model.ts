@@ -59,9 +59,7 @@ export function clampPercentage(value: number): number {
 }
 
 export function selectGauge(snapshot: ProviderSnapshot, now = Date.now()): GaugeSelection {
-  const validWindows = snapshot.quotaWindows
-    .filter((window) => Number.isFinite(window.usedPercent) && isActive(window.resetsAt, now))
-    .map((window) => ({ ...window, usedPercent: clampPercentage(window.usedPercent) }))
+  const validWindows = activeQuotaWindows(snapshot, now)
     .sort((a, b) => b.usedPercent - a.usedPercent);
 
   const quota = validWindows[0];
@@ -87,6 +85,12 @@ export function selectGauge(snapshot: ProviderSnapshot, now = Date.now()): Gauge
     determinate: false,
     label: usage ? `${capitalize(usage.scope)} tokens` : "Usage unavailable"
   };
+}
+
+export function activeQuotaWindows(snapshot: ProviderSnapshot, now = Date.now()): QuotaWindow[] {
+  return snapshot.quotaWindows
+    .filter((window) => Number.isFinite(window.usedPercent) && isActive(window.resetsAt, now))
+    .map((window) => ({ ...window, usedPercent: clampPercentage(window.usedPercent) }));
 }
 
 function isActive(resetsAt: string | undefined, now: number): boolean {

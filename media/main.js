@@ -7,6 +7,7 @@
   const value = document.getElementById("value");
   const label = document.getElementById("label");
   const tokens = document.getElementById("tokens");
+  const quotaDetails = document.getElementById("quota-details");
   const reset = document.getElementById("reset");
   const source = document.getElementById("source");
   const message = document.getElementById("message");
@@ -43,14 +44,30 @@
       value.textContent = "—";
     }
     label.textContent = data.gauge.label;
-    tokens.textContent = formatTokens(data.snapshot.tokenUsage, data.snapshot.quotaWindows.length > 0);
+    renderQuotaDetails(data.quotaDetails);
+    tokens.textContent = formatTokens(data.snapshot.tokenUsage);
     reset.textContent = data.resetAt ? `Resets ${new Date(data.resetAt).toLocaleString()}` : "";
     source.textContent = `${data.snapshot.state} · ${data.snapshot.source.label} · ${data.snapshot.source.accuracy} · ${relativeTime(data.snapshot.observedAt)}`;
     message.textContent = data.snapshot.message || "";
   });
 
-  function formatTokens(usage, hasQuota) {
-    if (!usage || hasQuota) return "";
+  function renderQuotaDetails(windows) {
+    quotaDetails.replaceChildren();
+    if (!Array.isArray(windows) || windows.length === 0) {
+      const item = document.createElement("li");
+      item.textContent = "No active quota windows reported.";
+      quotaDetails.append(item);
+      return;
+    }
+    for (const window of windows) {
+      const item = document.createElement("li");
+      const resetText = window.resetsAt ? ` · resets ${new Date(window.resetsAt).toLocaleString()}` : "";
+      item.textContent = `${window.label}: ${Math.round(window.usedPercent)}% used · ${Math.round(window.remainingPercent)}% left${resetText}`;
+      quotaDetails.append(item);
+    }
+  }
+  function formatTokens(usage) {
+    if (!usage) return "Token totals not reported.";
     const total = new Intl.NumberFormat().format(usage.total);
     const limit = usage.limit ? ` / ${new Intl.NumberFormat().format(usage.limit)}` : "";
     return `${capitalize(usage.scope)} tokens: ${total}${limit}`;

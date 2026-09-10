@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { clampPercentage, selectGauge, type ProviderSnapshot } from "../../src/model";
+import { activeQuotaWindows, clampPercentage, selectGauge, type ProviderSnapshot } from "../../src/model";
 
 const base: ProviderSnapshot = {
   providerId: "claude",
@@ -47,5 +47,19 @@ describe("gauge selection", () => {
       value: 25,
       label: "Context window"
     });
+  });
+
+  it("returns every active quota window for sidebar details", () => {
+    assert.deepEqual(activeQuotaWindows({
+      ...base,
+      quotaWindows: [
+        { id: "short", label: "5-hour limit", usedPercent: 35 },
+        { id: "week", label: "Weekly limit", usedPercent: 140 },
+        { id: "expired", label: "Expired", usedPercent: 99, resetsAt: "2026-09-10T10:00:00Z" }
+      ]
+    }, Date.parse("2026-09-10T11:00:00Z")), [
+      { id: "short", label: "5-hour limit", usedPercent: 35 },
+      { id: "week", label: "Weekly limit", usedPercent: 100 }
+    ]);
   });
 });
