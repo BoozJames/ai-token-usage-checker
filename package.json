@@ -2,10 +2,24 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "0.1.8",
-  "private": true,
+  "version": "0.3.0",
   "publisher": "jamesbooz",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "preview": true,
+  "pricing": "Free",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BoozJames/ai-token-usage-checker.git"
+  },
+  "homepage": "https://github.com/BoozJames/ai-token-usage-checker#readme",
+  "bugs": {
+    "url": "https://github.com/BoozJames/ai-token-usage-checker/issues"
+  },
+  "galleryBanner": {
+    "color": "#14213d",
+    "theme": "dark"
+  },
   "engines": {
     "vscode": "^1.95.0",
     "node": ">=20.19.0"
@@ -144,7 +158,7 @@
     "test:unit": "node scripts/test-unit.mjs",
     "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
     "compile:tests": "tsc -p tsconfig.test.json",
-    "package": "npm run check && vsce package --out ai-token-checker.vsix",
+    "package": "npm run check && vsce package --pre-release --out ai-token-checker.vsix",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "vscode:prepublish": "npm run build"
   },

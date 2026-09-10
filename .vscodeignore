@@ -1,6 +1,10 @@
 .github/**
 .vscode/**
 .gitignore
+AGENTS.md
+CLAUDE.md
+CONTRIBUTING.md
+PUBLISHING.md
 src/**
 test/**
 dist-test/**
