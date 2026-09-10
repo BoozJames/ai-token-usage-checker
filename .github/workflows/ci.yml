@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop]
+  pull_request:
+    branches: [master, develop]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm audit --audit-level=high
+      - name: Extension Host tests (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:integration
+      - name: Extension Host tests
+        if: runner.os != 'Linux'
+        run: npm run test:integration
+      - name: Package validation
+        run: npx vsce package --out ai-token-checker-${{ runner.os }}.vsix
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vsix-${{ runner.os }}
+          path: ai-token-checker-${{ runner.os }}.vsix
+          if-no-files-found: error

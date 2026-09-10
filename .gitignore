@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-test/
+*.vsix
+*.sha256
+.vscode-test/
+.env
+.env.*
+coverage/
+*.log

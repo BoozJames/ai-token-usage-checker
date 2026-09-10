@@ -1,0 +1,142 @@
+{
+  "name": "ai-token-checker",
+  "displayName": "AI Token Checker",
+  "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "jamesbooz",
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.95.0",
+    "node": ">=20.19.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "tokens",
+    "quota",
+    "claude",
+    "codex",
+    "copilot"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onView:aiTokenChecker.gauge",
+    "onCommand:aiTokenChecker.refresh",
+    "onCommand:aiTokenChecker.connect",
+    "onCommand:aiTokenChecker.disconnect",
+    "onCommand:aiTokenChecker.setupClaude",
+    "onCommand:aiTokenChecker.removeClaudeBridge"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiTokenChecker.refresh",
+        "title": "Refresh",
+        "category": "AI Token Checker",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "aiTokenChecker.connect",
+        "title": "Connect Selected Provider",
+        "category": "AI Token Checker"
+      },
+      {
+        "command": "aiTokenChecker.disconnect",
+        "title": "Disconnect Selected Provider",
+        "category": "AI Token Checker"
+      },
+      {
+        "command": "aiTokenChecker.setupClaude",
+        "title": "Set Up Claude Code Bridge",
+        "category": "AI Token Checker"
+      },
+      {
+        "command": "aiTokenChecker.removeClaudeBridge",
+        "title": "Remove Claude Code Bridge",
+        "category": "AI Token Checker"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "aiTokenChecker",
+          "title": "AI Token Checker",
+          "icon": "media/gauge.svg"
+        }
+      ]
+    },
+    "views": {
+      "aiTokenChecker": [
+        {
+          "type": "webview",
+          "id": "aiTokenChecker.gauge",
+          "name": "Usage Gauge",
+          "icon": "media/gauge.svg",
+          "contextualTitle": "AI Token Checker"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "aiTokenChecker.refresh",
+          "when": "view == aiTokenChecker.gauge",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "AI Token Checker",
+      "properties": {
+        "aiTokenChecker.codex.executable": {
+          "type": "string",
+          "default": "codex",
+          "scope": "application",
+          "description": "Codex executable name or absolute path. It is spawned directly without a shell."
+        },
+        "aiTokenChecker.refreshIntervalSeconds": {
+          "type": "number",
+          "default": 60,
+          "minimum": 60,
+          "maximum": 900,
+          "scope": "application",
+          "description": "Minimum interval between provider quota refreshes."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "check": "npm run lint && npm run typecheck && npm run test:unit && npm run scan:secrets && npm run build",
+    "lint": "eslint src test esbuild.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit",
+    "test:unit": "node --import tsx --test test/unit/*.test.ts",
+    "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
+    "compile:tests": "tsc -p tsconfig.test.json",
+    "package": "npm run check && vsce package --out ai-token-checker.vsix",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "vscode:prepublish": "npm run build"
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "1.0.13"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.14",
+    "@types/vscode": "1.95.0",
+    "@eslint/js": "10.0.1",
+    "@typescript-eslint/eslint-plugin": "8.70.0",
+    "@typescript-eslint/parser": "8.70.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "3.9.2",
+    "esbuild": "0.28.2",
+    "eslint": "10.10.0",
+    "tsx": "4.20.6",
+    "typescript": "6.0.2",
+    "typescript-eslint": "8.70.0"
+  }
+}
