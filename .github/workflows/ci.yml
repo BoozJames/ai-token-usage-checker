@@ -35,7 +35,7 @@ jobs:
         if: runner.os != 'Linux'
         run: npm run test:integration
       - name: Package validation
-        run: npx vsce package --out ai-token-checker-${{ runner.os }}.vsix
+        run: npx vsce package --pre-release --out ai-token-checker-${{ runner.os }}.vsix
       - uses: actions/upload-artifact@v4
         with:
           name: vsix-${{ runner.os }}

@@ -4,13 +4,13 @@ Last verified: 2026-09-11 (Asia/Manila)
 
 ## Repository and release state
 
-- Package: `ai-token-checker` version `0.1.8`.
-- Publisher value in the manifest: `jamesbooz`; Marketplace publisher ownership is not yet confirmed.
+- Package: `ai-token-checker` version `0.3.0`, prepared as a Marketplace pre-release and Preview listing.
+- The Marketplace publisher ID in the manifest has been confirmed by the owner.
 - Repository default branch: `master`.
 - Active work branch: `feature/compact-top-gauge`.
 - The feature branch contains the current unmerged implementation; `develop` and `master` currently point to the same older base. Verify the live ahead/behind count with Git rather than recording a volatile number here.
 - The GitHub repository is public.
-- No VS Code Marketplace release has been published.
+- No VS Code Marketplace release has been published yet.
 - The exact Marketplace extension ID `jamesbooz.ai-token-checker` had no match when checked on 2026-09-11, but availability is not reserved until publication.
 
 ## Validation
@@ -23,6 +23,8 @@ The current feature branch passed on 2026-09-11:
 - Production build.
 - VS Code Extension Host smoke test.
 - Dependency audit with zero reported vulnerabilities.
+- Marketplace pre-release packaging for Windows x64, including manifest and
+  packaged-content inspection.
 
 A workspace and full-history sensitive-data audit on 2026-09-11 found no credential-shaped secrets, private keys, bearer tokens, JWTs, provider credential/snapshot files, or machine-specific user paths. CI uses the repository scanner against full Git history; this is a preventive check, not permission to place secrets in the repository temporarily.
 
@@ -64,14 +66,17 @@ The platform-specific Windows VSIX is approximately 44 MB because the official C
 
 ## Marketplace readiness
 
-The code is not ready to publish to the Marketplace until all items below are resolved:
-
-- Remove the manifest's `private` flag for the public release.
-- Confirm the immutable Marketplace publisher ID.
-- Choose a public-use license. The current proprietary license prohibits the use/distribution expected by a public listing.
-- Add `repository`, `homepage`, `bugs`, and public support metadata.
-- Add a dedicated PNG Marketplace icon of at least 128×128 pixels; keep the SVG only for VS Code UI contributions.
-- Rewrite private-release wording in README and security support policy.
-- Decide whether the first listing is Preview or stable.
-- Merge through `feature` → `develop` → `master` by pull request before tagging.
-- Add Marketplace trusted publishing only after the publisher and release policy are confirmed.
+- The manifest no longer has a private flag and now contains the confirmed
+  publisher, MIT license, public repository/support links, free pricing, Preview
+  metadata, and a neutral 256×256 PNG listing icon.
+- README, security support, third-party notices, changelog, and publishing
+  guidance have public-preview wording.
+- CI and release packaging mark VSIX files as Marketplace pre-releases.
+- The tag workflow verifies the tag is on `master` and matches `package.json`,
+  builds x64 packages on each native operating system, creates checksums, and
+  creates a GitHub pre-release.
+- Optional Marketplace publishing uses OIDC and remains disabled until trusted
+  publishing is configured and the repository variable is enabled.
+- Release is still blocked on the required pull requests, a tag on `master`,
+  and Marketplace trusted-publishing configuration. Do not publish from the
+  feature branch.

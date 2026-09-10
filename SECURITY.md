@@ -16,4 +16,4 @@ Report vulnerabilities privately to the repository owner through GitHub's privat
 
 ## Supported versions
 
-Only the latest private release receives security fixes before a public release policy is established.
+Only the latest published preview receives security fixes before a stable release policy is established.
