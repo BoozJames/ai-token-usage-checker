@@ -7,6 +7,7 @@
   const value = document.getElementById("value");
   const label = document.getElementById("label");
   const tokens = document.getElementById("tokens");
+  const quotaDetails = document.getElementById("quota-details");
   const reset = document.getElementById("reset");
   const source = document.getElementById("source");
   const message = document.getElementById("message");
@@ -32,10 +33,12 @@
     meter.classList.toggle("danger", data.gauge.determinate && data.gauge.value >= 90);
     if (data.gauge.determinate) {
       const pct = Math.max(0, Math.min(100, data.gauge.value));
+      const roundedUsed = Math.round(pct);
+      const roundedRemaining = 100 - roundedUsed;
       fill.style.setProperty("--usage", `${pct}%`);
-      meter.setAttribute("aria-valuenow", String(Math.round(pct)));
-      meter.setAttribute("aria-valuetext", `${Math.round(pct)} percent used for ${data.gauge.label}`);
-      value.textContent = `${Math.round(pct)}%`;
+      meter.setAttribute("aria-valuenow", String(roundedUsed));
+      meter.setAttribute("aria-valuetext", `${roundedUsed} percent used and ${roundedRemaining} percent remaining for ${data.gauge.label}`);
+      value.textContent = `${roundedUsed}% used · ${roundedRemaining}% remaining`;
     } else {
       fill.style.removeProperty("--usage");
       meter.removeAttribute("aria-valuenow");
@@ -43,14 +46,33 @@
       value.textContent = "—";
     }
     label.textContent = data.gauge.label;
+    renderQuotaDetails(data.quotaDetails);
     tokens.textContent = formatTokens(data.snapshot.tokenUsage);
     reset.textContent = data.resetAt ? `Resets ${new Date(data.resetAt).toLocaleString()}` : "";
     source.textContent = `${data.snapshot.state} · ${data.snapshot.source.label} · ${data.snapshot.source.accuracy} · ${relativeTime(data.snapshot.observedAt)}`;
     message.textContent = data.snapshot.message || "";
+    message.dataset.state = data.snapshot.state;
   });
 
+  function renderQuotaDetails(windows) {
+    quotaDetails.replaceChildren();
+    if (!Array.isArray(windows) || windows.length === 0) {
+      const item = document.createElement("li");
+      item.textContent = "No active quota windows reported.";
+      quotaDetails.append(item);
+      return;
+    }
+    for (const window of windows) {
+      const item = document.createElement("li");
+      const roundedUsed = Math.round(window.usedPercent);
+      const roundedRemaining = 100 - roundedUsed;
+      const resetText = window.resetsAt ? ` · resets ${new Date(window.resetsAt).toLocaleString()}` : "";
+      item.textContent = `${window.label}: ${roundedUsed}% used · ${roundedRemaining}% left${resetText}`;
+      quotaDetails.append(item);
+    }
+  }
   function formatTokens(usage) {
-    if (!usage) return "Token totals unavailable";
+    if (!usage) return "Token totals not reported.";
     const total = new Intl.NumberFormat().format(usage.total);
     const limit = usage.limit ? ` / ${new Intl.NumberFormat().format(usage.limit)}` : "";
     return `${capitalize(usage.scope)} tokens: ${total}${limit}`;

@@ -6,6 +6,7 @@ test/**
 dist-test/**
 coverage/**
 *.map
+**/*.map
 *.vsix
 *.sha256
 .env*

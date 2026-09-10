@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { clampPercentage, selectGauge, type ProviderSnapshot } from "../../src/model";
+import { activeQuotaWindows, clampPercentage, selectGauge, type ProviderSnapshot } from "../../src/model";
 
 const base: ProviderSnapshot = {
   providerId: "claude",
@@ -19,6 +19,21 @@ describe("gauge selection", () => {
     assert.deepEqual(selected, { determinate: true, value: 82, label: "7-day" });
   });
 
+  it("prefers a non-deprioritized window even when it is used less", () => {
+    const selected = selectGauge({ ...base, quotaWindows: [
+      { id: "completions", label: "Inline Suggestions", usedPercent: 40, deprioritized: true },
+      { id: "chat", label: "Chat", usedPercent: 5 }
+    ] });
+    assert.deepEqual(selected, { determinate: true, value: 5, label: "Chat" });
+  });
+
+  it("falls back to a deprioritized window when it is the only one available", () => {
+    const selected = selectGauge({ ...base, quotaWindows: [
+      { id: "completions", label: "Inline Suggestions", usedPercent: 40, deprioritized: true }
+    ] });
+    assert.deepEqual(selected, { determinate: true, value: 40, label: "Inline Suggestions" });
+  });
+
   it("uses bounded context when quota is absent", () => {
     assert.deepEqual(selectGauge({ ...base, tokenUsage: { scope: "context", total: 50, limit: 200 } }), {
       determinate: true, value: 25, label: "Context window"
@@ -35,5 +50,31 @@ describe("gauge selection", () => {
     assert.equal(clampPercentage(-2), 0);
     assert.equal(clampPercentage(140), 100);
     assert.equal(clampPercentage(Number.NaN), 0);
+  });
+
+  it("ignores expired quota windows before selecting a token fallback", () => {
+    assert.deepEqual(selectGauge({
+      ...base,
+      quotaWindows: [{ id: "expired", label: "Expired", usedPercent: 100, resetsAt: "2026-09-10T10:00:00Z" }],
+      tokenUsage: { scope: "context", total: 25, limit: 100 }
+    }, Date.parse("2026-09-10T11:00:00Z")), {
+      determinate: true,
+      value: 25,
+      label: "Context window"
+    });
+  });
+
+  it("returns every active quota window for sidebar details", () => {
+    assert.deepEqual(activeQuotaWindows({
+      ...base,
+      quotaWindows: [
+        { id: "short", label: "5-hour limit", usedPercent: 35 },
+        { id: "week", label: "Weekly limit", usedPercent: 140 },
+        { id: "expired", label: "Expired", usedPercent: 99, resetsAt: "2026-09-10T10:00:00Z" }
+      ]
+    }, Date.parse("2026-09-10T11:00:00Z")), [
+      { id: "short", label: "5-hour limit", usedPercent: 35 },
+      { id: "week", label: "Weekly limit", usedPercent: 100 }
+    ]);
   });
 });

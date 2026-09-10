@@ -17,6 +17,8 @@ export interface QuotaWindow {
   usedPercent: number;
   resetsAt?: string;
   durationMinutes?: number;
+  /** True for windows that should only become the primary gauge when nothing else is available (e.g. inline-suggestion counts, which are rarely the resource a user actually watches). */
+  deprioritized?: boolean;
 }
 
 export interface TokenUsage {
@@ -47,11 +49,9 @@ export interface ProviderAdapter {
   dispose(): void;
 }
 
-export interface GaugeSelection {
-  determinate: boolean;
-  value?: number;
-  label: string;
-}
+export type GaugeSelection =
+  | { determinate: true; value: number; label: string; resetsAt?: string }
+  | { determinate: false; value?: never; label: string };
 
 export function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) {
@@ -60,15 +60,18 @@ export function clampPercentage(value: number): number {
   return Math.min(100, Math.max(0, value));
 }
 
-export function selectGauge(snapshot: ProviderSnapshot): GaugeSelection {
-  const validWindows = snapshot.quotaWindows
-    .filter((window) => Number.isFinite(window.usedPercent))
-    .map((window) => ({ ...window, usedPercent: clampPercentage(window.usedPercent) }))
-    .sort((a, b) => b.usedPercent - a.usedPercent);
+export function selectGauge(snapshot: ProviderSnapshot, now = Date.now()): GaugeSelection {
+  const validWindows = activeQuotaWindows(snapshot, now)
+    .sort((a, b) => Number(!!a.deprioritized) - Number(!!b.deprioritized) || b.usedPercent - a.usedPercent);
 
   const quota = validWindows[0];
   if (quota) {
-    return { determinate: true, value: quota.usedPercent, label: quota.label };
+    return {
+      determinate: true,
+      value: quota.usedPercent,
+      label: quota.label,
+      ...(quota.resetsAt ? { resetsAt: quota.resetsAt } : {})
+    };
   }
 
   const usage = snapshot.tokenUsage;
@@ -84,6 +87,18 @@ export function selectGauge(snapshot: ProviderSnapshot): GaugeSelection {
     determinate: false,
     label: usage ? `${capitalize(usage.scope)} tokens` : "Usage unavailable"
   };
+}
+
+export function activeQuotaWindows(snapshot: ProviderSnapshot, now = Date.now()): QuotaWindow[] {
+  return snapshot.quotaWindows
+    .filter((window) => Number.isFinite(window.usedPercent) && isActive(window.resetsAt, now))
+    .map((window) => ({ ...window, usedPercent: clampPercentage(window.usedPercent) }));
+}
+
+function isActive(resetsAt: string | undefined, now: number): boolean {
+  if (!resetsAt) return true;
+  const resetTime = Date.parse(resetsAt);
+  return Number.isFinite(resetTime) && resetTime > now;
 }
 
 function capitalize(value: string): string {
