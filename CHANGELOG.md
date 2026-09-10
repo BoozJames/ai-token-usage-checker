@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.0 — Public preview
+
+- Prepared the first public Marketplace pre-release under the MIT License.
+- Added public repository, support, issue tracker, pricing, Preview, and listing-icon metadata.
+- Added platform-specific GitHub pre-release packaging and optional OIDC Marketplace publishing.
+- Retained consent-first provider access, provenance labels, and explicit unavailable states.
+
 ## 0.1.8
 
 - Claude bridge setup now records an absolute Node.js executable instead of relying on the status-line shell PATH.

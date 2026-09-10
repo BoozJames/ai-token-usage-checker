@@ -1,6 +1,10 @@
 # AI Token Checker
 
-AI Token Checker is a private, local-first VS Code extension that shows one honest usage gauge for Claude Code, OpenAI Codex, or GitHub Copilot.
+AI Token Checker is a local-first VS Code extension that shows one honest usage gauge for Claude Code, OpenAI Codex, or GitHub Copilot.
+
+> **Public preview:** version 0.3.x is an early pre-release. Provider APIs and
+> account entitlements differ, so unsupported or absent metrics are shown as
+> unavailable rather than estimated.
 
 ## What it shows
 
@@ -15,9 +19,15 @@ The view uses one compact horizontal gauge centered at the top of its container.
 
 A native status item shows only the selected provider and its primary remaining percentage at the inner edge of the bottom-right status group, as close to the center as VS Code's alignment API permits. The sidebar retains the detailed window and token breakdown. The status item and editor-title dashboard button open a Quick Pick for switching providers, refreshing, or opening detailed diagnostics. The editor-title button appears only when a normal editor tab is active; VS Code does not show it on the Welcome page or Chat view. Disable the status item with `AI Token Checker: Status Bar Enabled`; disabling it also stops background provider refresh when the detailed view is closed.
 
-## Install privately
+## Install
 
-Download the VSIX and matching SHA-256 file from the private GitHub release, verify the checksum, then run **Extensions: Install from VSIX…**. For local development:
+From the VS Code Marketplace, open the extension page, choose **Switch to
+Pre-Release Version** if prompted, and install **AI Token Checker** from
+publisher `jamesbooz`.
+
+For a GitHub pre-release, download the VSIX for your operating system and its
+matching SHA-256 file, verify the checksum, then run **Extensions: Install from
+VSIX…**. For local development:
 
 ```text
 npm ci
@@ -71,7 +81,9 @@ After consent, the extension requests a GitHub session through VS Code's officia
 
 Requires Node.js 20.19+ and VS Code 1.95+. Press `F5` to start the Extension Development Host.
 
-The packaged `PRIVACY.md`, `ACCURACY.md`, `SECURITY.md`, and `CONTRIBUTING.md` files contain the detailed policies.
+The packaged `PRIVACY.md`, `ACCURACY.md`, `SECURITY.md`, and `SUPPORT.md` files
+contain the detailed user-facing policies. Maintainers should follow the
+repository's `CONTRIBUTING.md` and `PUBLISHING.md` files.
 
 The provider Quick Pick displays artwork directly from the installed official Claude Code, OpenAI Codex, and GitHub Copilot extensions. Those files are not copied into AI Token Checker. A VS Code theme icon is used when an official provider extension is unavailable.
 
