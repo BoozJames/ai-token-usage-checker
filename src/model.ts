@@ -17,6 +17,8 @@ export interface QuotaWindow {
   usedPercent: number;
   resetsAt?: string;
   durationMinutes?: number;
+  /** True for windows that should only become the primary gauge when nothing else is available (e.g. inline-suggestion counts, which are rarely the resource a user actually watches). */
+  deprioritized?: boolean;
 }
 
 export interface TokenUsage {
@@ -60,7 +62,7 @@ export function clampPercentage(value: number): number {
 
 export function selectGauge(snapshot: ProviderSnapshot, now = Date.now()): GaugeSelection {
   const validWindows = activeQuotaWindows(snapshot, now)
-    .sort((a, b) => b.usedPercent - a.usedPercent);
+    .sort((a, b) => Number(!!a.deprioritized) - Number(!!b.deprioritized) || b.usedPercent - a.usedPercent);
 
   const quota = validWindows[0];
   if (quota) {

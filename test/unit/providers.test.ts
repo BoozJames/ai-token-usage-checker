@@ -115,6 +115,8 @@ describe("Copilot normalization", () => {
     assert.equal(snapshot.state, "ready");
     assert.equal(snapshot.quotaWindows.length, 2);
     assert.equal(snapshot.quotaWindows.find((window) => window.id === "completions")?.usedPercent, 4.5);
+    assert.equal(snapshot.quotaWindows.find((window) => window.id === "completions")?.deprioritized, true);
+    assert.equal(snapshot.quotaWindows.find((window) => window.id === "chat")?.deprioritized, undefined);
     assert.equal(snapshot.quotaWindows.some((window) => window.id === "premium_interactions"), false);
   });
 });

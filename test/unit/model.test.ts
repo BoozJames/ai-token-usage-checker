@@ -19,6 +19,21 @@ describe("gauge selection", () => {
     assert.deepEqual(selected, { determinate: true, value: 82, label: "7-day" });
   });
 
+  it("prefers a non-deprioritized window even when it is used less", () => {
+    const selected = selectGauge({ ...base, quotaWindows: [
+      { id: "completions", label: "Inline Suggestions", usedPercent: 40, deprioritized: true },
+      { id: "chat", label: "Chat", usedPercent: 5 }
+    ] });
+    assert.deepEqual(selected, { determinate: true, value: 5, label: "Chat" });
+  });
+
+  it("falls back to a deprioritized window when it is the only one available", () => {
+    const selected = selectGauge({ ...base, quotaWindows: [
+      { id: "completions", label: "Inline Suggestions", usedPercent: 40, deprioritized: true }
+    ] });
+    assert.deepEqual(selected, { determinate: true, value: 40, label: "Inline Suggestions" });
+  });
+
   it("uses bounded context when quota is absent", () => {
     assert.deepEqual(selectGauge({ ...base, tokenUsage: { scope: "context", total: 50, limit: 200 } }), {
       determinate: true, value: 25, label: "Context window"

@@ -123,7 +123,15 @@ export function normalizeCopilot(
       const resetsAt = resetTime !== undefined && Number.isFinite(resetTime) && resetTime > observedAt.getTime()
         ? new Date(resetTime).toISOString()
         : undefined;
-      quotaWindows.push({ id, label: quotaLabel(id), usedPercent, ...(resetsAt ? { resetsAt } : {}) });
+      quotaWindows.push({
+        id,
+        label: quotaLabel(id),
+        usedPercent,
+        ...(resetsAt ? { resetsAt } : {}),
+        // Inline-suggestion counts churn constantly and are rarely what a user is watching;
+        // let chat/premium-request quotas win the primary gauge whenever they're also active.
+        ...(id === "completions" ? { deprioritized: true } : {})
+      });
     }
     return {
       providerId: "copilot",
