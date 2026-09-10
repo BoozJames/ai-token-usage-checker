@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { claudeSnapshotPath, removeClaudeBridge, setupClaudeBridge } from "./claudeSetup";
 import { ProviderController } from "./controller";
@@ -16,8 +17,11 @@ export function activate(context: vscode.ExtensionContext): void {
     bridgePath: join(context.globalStorageUri.fsPath, "claude-bridge.cjs"),
     onChanged: () => void controller.refresh()
   }));
-  adapters.set("codex", new CodexAdapter(() => vscode.workspace.getConfiguration("aiTokenChecker.codex").get<string>("executable", "codex")));
-  adapters.set("copilot", new CopilotAdapter());
+  adapters.set("codex", new CodexAdapter(resolveCodexExecutable));
+  adapters.set("copilot", new CopilotAdapter(async () => {
+    const session = await vscode.authentication.getSession("github", ["read:user"], { createIfNone: true });
+    return session.accessToken;
+  }));
   const controller = new ProviderController(context, adapters);
   const viewProvider = new GaugeViewProvider(context, controller);
 
@@ -39,3 +43,24 @@ export function activate(context: vscode.ExtensionContext): void {
 }
 
 export function deactivate(): void {}
+
+function resolveCodexExecutable(): string {
+  const configured = vscode.workspace.getConfiguration("aiTokenChecker.codex").get<string>("executable", "codex").trim();
+  if (configured !== "codex") return configured;
+
+  const openAiExtension = vscode.extensions.getExtension("openai.chatgpt");
+  const binDirectory = openAiExtension ? join(openAiExtension.extensionPath, "bin") : undefined;
+  if (!binDirectory || !existsSync(binDirectory)) return configured;
+
+  const executableName = process.platform === "win32" ? "codex.exe" : "codex";
+  for (const entry of readdirSync(binDirectory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const candidate = join(binDirectory, entry.name, executableName);
+    try {
+      if (statSync(candidate).isFile()) return candidate;
+    } catch {
+      // A concurrently updated OpenAI extension may replace its bin directory.
+    }
+  }
+  return configured;
+}

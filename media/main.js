@@ -34,8 +34,8 @@
       const pct = Math.max(0, Math.min(100, data.gauge.value));
       fill.style.setProperty("--usage", `${pct}%`);
       meter.setAttribute("aria-valuenow", String(Math.round(pct)));
-      meter.setAttribute("aria-valuetext", `${Math.round(pct)} percent used for ${data.gauge.label}`);
-      value.textContent = `${Math.round(pct)}%`;
+      meter.setAttribute("aria-valuetext", `${Math.round(pct)} percent used and ${Math.round(100 - pct)} percent remaining for ${data.gauge.label}`);
+      value.textContent = `${Math.round(pct)}% used · ${Math.round(100 - pct)}% remaining`;
     } else {
       fill.style.removeProperty("--usage");
       meter.removeAttribute("aria-valuenow");
@@ -50,7 +50,7 @@
   });
 
   function formatTokens(usage) {
-    if (!usage) return "Token totals unavailable";
+    if (!usage) return "";
     const total = new Intl.NumberFormat().format(usage.total);
     const limit = usage.limit ? ` / ${new Intl.NumberFormat().format(usage.limit)}` : "";
     return `${capitalize(usage.scope)} tokens: ${total}${limit}`;

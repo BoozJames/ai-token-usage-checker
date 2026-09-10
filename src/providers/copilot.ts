@@ -21,6 +21,8 @@ export class CopilotAdapter implements ProviderAdapter {
   readonly id = "copilot" as const;
   private client: CopilotClientHandle | undefined;
 
+  constructor(private readonly getGitHubToken: () => Promise<string>) {}
+
   async detect(): Promise<ProviderAvailability> {
     return { available: true };
   }
@@ -28,8 +30,15 @@ export class CopilotAdapter implements ProviderAdapter {
   async connect(): Promise<ConnectionResult> {
     if (this.client) return { connected: true };
     const { CopilotClient } = await import("@github/copilot-sdk");
+    let gitHubToken: string;
+    try {
+      gitHubToken = await this.getGitHubToken();
+    } catch {
+      return { connected: false, message: "GitHub sign-in was cancelled or unavailable." };
+    }
     const client: CopilotClientHandle = new CopilotClient({
-      useLoggedInUser: true,
+      gitHubToken,
+      useLoggedInUser: false,
       logLevel: "none",
       enableRemoteSessions: false,
       clientInfo: { applicationName: "ai-token-checker", applicationVersion: "0.1.0" }
@@ -50,8 +59,15 @@ export class CopilotAdapter implements ProviderAdapter {
   async refresh(signal: AbortSignal): Promise<ProviderSnapshot> {
     if (!this.client) throw new Error("GitHub Copilot is disconnected");
     if (signal.aborted) throw new Error("Refresh cancelled");
-    const result = await this.client.rpc.account.getQuota({});
-    return normalizeCopilot(result.quotaSnapshots);
+    try {
+      const result = await this.client.rpc.account.getQuota({});
+      return normalizeCopilot(result.quotaSnapshots);
+    } catch (error) {
+      if (error instanceof Error && /not authenticated/i.test(error.message)) {
+        throw new Error("GitHub authentication expired. Disconnect and connect again to sign in.", { cause: error });
+      }
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {

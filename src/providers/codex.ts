@@ -34,7 +34,7 @@ export class CodexAdapter implements ProviderAdapter {
       return { connected: true };
     } catch (error) {
       await this.disconnect();
-      return { connected: false, message: error instanceof Error ? error.message : "Could not start Codex." };
+      return { connected: false, message: codexConnectionMessage(error) };
     }
   }
 
@@ -164,6 +164,13 @@ export class CodexAdapter implements ProviderAdapter {
     }
     this.pending.clear();
   }
+}
+
+function codexConnectionMessage(error: unknown): string {
+  if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") {
+    return "Codex executable was not found. Install Codex or set AI Token Checker: Codex Executable to its absolute path.";
+  }
+  return error instanceof Error ? error.message : "Could not start Codex.";
 }
 
 export function normalizeCodex(limitsValue: unknown, usageValue: unknown): ProviderSnapshot {

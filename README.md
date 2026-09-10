@@ -10,7 +10,7 @@ AI Token Checker is a private, local-first VS Code extension that shows one hone
 - An indeterminate bar and a token count when no meaningful maximum exists.
 - Source, accuracy, freshness, and reset time alongside the gauge.
 
-The view automatically becomes vertical in a narrow sidebar and horizontal in a wide bottom panel. Move it with **View: Move View** or by dragging **Usage Gauge** to another view container. VS Code does not allow extensions to create arbitrary floating overlays.
+The view uses one compact horizontal gauge centered at the top of its container. Move it with **View: Move View** or by dragging **Usage Gauge** to another view container. VS Code does not allow extensions to place a floating gauge over the title bar or at arbitrary screen coordinates.
 
 ## Install privately
 
@@ -39,13 +39,13 @@ Claude rate-limit fields require a supported Claude Code version and account and
 
 ### Codex
 
-The extension spawns the configured `codex` executable directly as `codex app-server`, performs the required initialization handshake, and requests `account/rateLimits/read` plus `account/usage/read`. Codex owns authentication. API-key-only or unsupported accounts may not return ChatGPT quota/token activity.
+The extension spawns the configured `codex` executable directly as `codex app-server`, performs the required initialization handshake, and requests `account/rateLimits/read` plus `account/usage/read`. When the default executable name is used, it can locate the Codex binary bundled with the official OpenAI VS Code extension. Codex owns authentication. API-key-only or unsupported accounts may not return ChatGPT quota/token activity.
 
 The executable can be changed with `aiTokenChecker.codex.executable`. It must be an executable name or absolute path; no shell command or arguments are accepted.
 
 ### GitHub Copilot
 
-The extension starts the pinned official GitHub Copilot SDK runtime and calls `account.getQuota`. Authentication remains owned by Copilot. Existing Copilot Chat token totals are not exposed through a supported cross-extension interface, so the gauge displays official bounded quota only and says when session tokens are unavailable.
+After consent, the extension requests a GitHub session through VS Code's official Authentication API, passes that token directly to the pinned official GitHub Copilot SDK runtime, and calls `account.getQuota`. The token is kept in memory only and is never logged or written by this extension. Existing Copilot Chat token totals are not exposed through a supported cross-extension interface, so the gauge displays official bounded quota only and says when session tokens are unavailable.
 
 ## Commands
 
