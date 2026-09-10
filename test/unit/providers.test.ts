@@ -75,4 +75,16 @@ describe("Copilot normalization", () => {
     assert.equal(snapshot.quotaWindows[0]?.label, "Inline Suggestions");
     assert.equal(snapshot.quotaWindows[0]?.usedPercent, 4);
   });
+
+  it("identifies the transition after a quota reset", () => {
+    const snapshot = normalizeCopilot({
+      completions: {
+        isUnlimitedEntitlement: false,
+        remainingPercentage: 96,
+        resetDate: "2026-09-10T14:43:11Z"
+      }
+    }, new Date("2026-09-10T14:43:12Z"));
+    assert.equal(snapshot.state, "unavailable");
+    assert.match(snapshot.message ?? "", /just reset/);
+  });
 });

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.6
+
+- Claude's empty state now explains that a CLI status-line event and Claude Code 2.1.251+ are required for quota windows.
+- Running Claude setup again can repair the installed bridge without changing its command.
+- Copilot quota reset transitions are identified as temporary informational states instead of generic warnings.
+- Rounded used and remaining values now always add up to 100%.
+
 ## 0.1.5
 
 - The sidebar now lists every active quota window as compact text, including used, remaining, and reset values.

@@ -38,7 +38,7 @@ If Claude already has a `statusLine` command, the extension will not change it w
 
 Use **AI Token Checker: Remove Claude Code Bridge** to remove settings installed by this extension. If the setting changed after installation, it is left untouched.
 
-Claude rate-limit fields require a supported Claude Code version and account and may not appear until the first response.
+The bridge receives status-line events from a Claude Code CLI session. Start or restart `claude` in a terminal and send a message after setup; using only the graphical Claude panel may not produce a terminal status-line event. Claude rate-limit fields require Claude Code 2.1.251 or newer, a supported account, and the first API response.
 
 ### Codex
 

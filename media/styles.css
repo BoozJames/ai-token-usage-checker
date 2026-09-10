@@ -125,6 +125,11 @@ select:focus, button:focus {
 
 .message {
   min-height: 1.2em;
+  color: var(--vscode-descriptionForeground);
+}
+
+.message[data-state="error"],
+.message[data-state="stale"] {
   color: var(--vscode-notificationsWarningIcon-foreground);
 }
 

@@ -24,7 +24,15 @@ export async function setupClaudeBridge(context: vscode.ExtensionContext): Promi
   const installedCommand = context.globalState.get<string>(COMMAND_STATE_KEY);
 
   if (installedCommand && existingCommand === installedCommand) {
-    void vscode.window.showInformationMessage("The Claude Code bridge is already installed.");
+    const choice = await vscode.window.showInformationMessage(
+      "The Claude Code bridge is installed, but it can be repaired by copying the latest bridge again. Afterward, start or restart a Claude Code terminal session and send a message.",
+      "Repair Bridge"
+    );
+    if (choice === "Repair Bridge") {
+      await mkdir(context.globalStorageUri.fsPath, { recursive: true });
+      await copyFile(join(context.extensionPath, "resources", "claude-bridge.cjs"), join(context.globalStorageUri.fsPath, "claude-bridge.cjs"));
+      void vscode.window.showInformationMessage("Claude Code bridge repaired. Restart the Claude Code CLI and send a message to produce a fresh snapshot.");
+    }
     return true;
   }
   if (existingStatusLine !== undefined && (!existingCommand || statusLineRecord.type !== "command")) {

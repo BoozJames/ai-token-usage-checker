@@ -43,7 +43,7 @@ export class ClaudeAdapter implements ProviderAdapter {
         observedAt: new Date().toISOString(),
         source: { label: "Claude Code status line", accuracy: "provider-reported" },
         quotaWindows: [],
-        message: "Waiting for Claude Code’s first response."
+        message: "No Claude Code terminal status-line event received yet. Start or restart the Claude Code CLI, then send a message. Claude Code 2.1.251 or newer is required for 5-hour and 7-day quota fields."
       };
     }
     const stat = await import("node:fs/promises").then(({ stat }) => stat(this.options.snapshotPath));
@@ -107,7 +107,9 @@ export function parseClaudeSnapshot(value: unknown): ProviderSnapshot {
     ...(total !== undefined
       ? { tokenUsage: { scope: "context" as const, total, ...(limit !== undefined ? { limit } : {}) } }
       : {}),
-    ...(quotaWindows.length || total !== undefined ? {} : { message: "Waiting for Claude Code’s first response." })
+    ...(quotaWindows.length || total !== undefined ? {} : {
+      message: "The Claude status line responded without usage metrics. Claude Code 2.1.251 or newer is required for 5-hour and 7-day quota fields."
+    })
   };
 }
 

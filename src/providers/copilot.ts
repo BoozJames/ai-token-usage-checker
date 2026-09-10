@@ -108,10 +108,14 @@ export function normalizeCopilot(
   observedAt = new Date()
 ): ProviderSnapshot {
     const quotaWindows: QuotaWindow[] = [];
+    let expiredBoundedQuotas = 0;
     for (const [id, quota] of Object.entries(quotaSnapshots)) {
       if (!quota || quota.isUnlimitedEntitlement) continue;
       const resetTime = quota.resetDate ? Date.parse(quota.resetDate) : undefined;
-      if (resetTime !== undefined && Number.isFinite(resetTime) && resetTime <= observedAt.getTime()) continue;
+      if (resetTime !== undefined && Number.isFinite(resetTime) && resetTime <= observedAt.getTime()) {
+        expiredBoundedQuotas += 1;
+        continue;
+      }
       const usedPercent = 100 - quota.remainingPercentage;
       if (!Number.isFinite(usedPercent)) continue;
       quotaWindows.push({
@@ -128,7 +132,9 @@ export function normalizeCopilot(
       source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
       quotaWindows,
       ...(quotaWindows.length ? {} : {
-        message: "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
+        message: expiredBoundedQuotas
+          ? "The previous Copilot quota period has just reset, but GitHub has not reported the new period yet. Refresh again shortly."
+          : "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."
       })
     };
 }
