@@ -8,3 +8,12 @@ dist-test/
 .env.*
 coverage/
 *.log
+.claude/
+.codex/
+.credentials.json
+auth.json
+claude-metrics.json
+*.pem
+*.pfx
+*.p12
+*.key
