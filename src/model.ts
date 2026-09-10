@@ -47,11 +47,9 @@ export interface ProviderAdapter {
   dispose(): void;
 }
 
-export interface GaugeSelection {
-  determinate: boolean;
-  value?: number;
-  label: string;
-}
+export type GaugeSelection =
+  | { determinate: true; value: number; label: string }
+  | { determinate: false; value?: never; label: string };
 
 export function clampPercentage(value: number): number {
   if (!Number.isFinite(value)) {

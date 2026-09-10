@@ -15,6 +15,7 @@ export class ProviderController implements vscode.Disposable {
   private selectedProvider: ProviderId;
   private connected = false;
   private visible = false;
+  private statusBarActive = false;
   private activeRefresh: AbortController | undefined;
   private lastSuccessful = new Map<ProviderId, ProviderSnapshot>();
   private currentSnapshot: ProviderSnapshot;
@@ -36,7 +37,18 @@ export class ProviderController implements vscode.Disposable {
 
   async setVisible(visible: boolean): Promise<void> {
     this.visible = visible;
-    if (!visible) {
+    if (!this.isActive()) {
+      this.stopTimer();
+      await this.disconnectAdapters();
+      return;
+    }
+    if (this.hasConsent(this.selectedProvider)) await this.connect(false);
+    else this.emit();
+  }
+
+  async setStatusBarActive(active: boolean): Promise<void> {
+    this.statusBarActive = active;
+    if (!this.isActive()) {
       this.stopTimer();
       await this.disconnectAdapters();
       return;
@@ -54,7 +66,7 @@ export class ProviderController implements vscode.Disposable {
     this.currentSnapshot = this.lastSuccessful.get(provider) ?? placeholder(provider, false);
     await this.context.globalState.update(SELECTED_KEY, provider);
     this.emit();
-    if (this.visible && this.hasConsent(provider)) await this.connect(false);
+    if (this.isActive() && this.hasConsent(provider)) await this.connect(false);
   }
 
   async connect(prompt = true): Promise<void> {
@@ -80,7 +92,7 @@ export class ProviderController implements vscode.Disposable {
       return;
     }
     const result = await adapter.connect();
-    if (!this.visible || provider !== this.selectedProvider) {
+    if (!this.isActive() || provider !== this.selectedProvider) {
       await adapter.disconnect();
       return;
     }
@@ -104,7 +116,7 @@ export class ProviderController implements vscode.Disposable {
   }
 
   async refresh(): Promise<void> {
-    if (!this.visible || !this.connected) return;
+    if (!this.isActive() || !this.connected) return;
     const provider = this.selectedProvider;
     const adapter = this.adapters.get(provider);
     if (!adapter) return;
@@ -133,6 +145,9 @@ export class ProviderController implements vscode.Disposable {
 
   private hasConsent(provider: ProviderId): boolean {
     return this.context.globalState.get<boolean>(`${CONSENT_PREFIX}${provider}`) === true;
+  }
+  private isActive(): boolean {
+    return this.visible || this.statusBarActive;
   }
   private startTimer(): void {
     this.stopTimer();

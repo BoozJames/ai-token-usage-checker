@@ -12,6 +12,8 @@ AI Token Checker is a private, local-first VS Code extension that shows one hone
 
 The view uses one compact horizontal gauge centered at the top of its container. Move it with **View: Move View** or by dragging **Usage Gauge** to another view container. VS Code does not allow extensions to place a floating gauge over the title bar or at arbitrary screen coordinates.
 
+A native status item shows the selected provider and remaining percentage at the inner edge of the bottom-right status group, as close to the center as VS Code's alignment API permits. An editor-title dashboard button opens the detailed gauge. Disable the status item with `AI Token Checker: Status Bar Enabled`; disabling it also stops background provider refresh when the detailed view is closed.
+
 ## Install privately
 
 Download the VSIX and matching SHA-256 file from the private GitHub release, verify the checksum, then run **Extensions: Install from VSIX…**. For local development:

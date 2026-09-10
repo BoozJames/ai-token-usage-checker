@@ -16,4 +16,4 @@ The extension does not read assistant transcripts, prompts, completions, source 
 - Codex: after consent, a local `codex app-server` process may contact OpenAI using Codex-owned authentication.
 - Copilot: after consent and a VS Code GitHub sign-in, the official Copilot SDK runtime may contact GitHub using the in-memory session token.
 
-Hiding the view stops watchers, refresh timers, and provider processes. Disconnect also revokes the extension's saved consent for that provider.
+When the status-bar indicator is enabled, a previously consented selected provider may refresh in the background at the configured interval. Disabling the status bar and hiding the detailed view stops watchers, refresh timers, and provider processes. Disconnect also revokes the extension's saved consent for that provider.

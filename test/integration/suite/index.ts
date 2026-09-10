@@ -9,6 +9,7 @@ export async function run(): Promise<void> {
   const commands = await vscode.commands.getCommands(true);
   assert.ok(commands.includes("aiTokenChecker.refresh"));
   assert.ok(commands.includes("aiTokenChecker.connect"));
+  assert.ok(commands.includes("aiTokenChecker.showGauge"));
   assert.ok(commands.includes("aiTokenChecker.setupClaude"));
   console.log(`Integration smoke test passed from ${resolve(__dirname, "../../..")} .`);
 }
