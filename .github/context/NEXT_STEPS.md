@@ -5,7 +5,7 @@ bypass a blocked integration.
 
 ## 1. Review and merge the `1.0.0` version bump
 
-- Open and review a pull request from `feature/v1-stable-release` into `develop`.
+- Review pull request #9 from `feature/v1-stable-release` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
 - Confirm `package.json` is version `1.0.0` and the packaged VSIX remains

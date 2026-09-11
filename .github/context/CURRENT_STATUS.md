@@ -9,6 +9,8 @@ Last verified: 2026-09-11 (Asia/Manila)
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
 - Active work branch: `feature/v1-stable-release`, created from `origin/develop`.
+- Pull request #9 targets `develop` from `feature/v1-stable-release` and is
+  awaiting its three-platform CI matrix and review.
 - Pull request #7 was merged into `develop`, and release pull request #8 was
   merged into `master`. Their Windows, Linux, and macOS CI matrices passed.
 - The GitHub repository is public. No VS Code Marketplace release has been
