@@ -9,6 +9,8 @@ Last verified: 2026-09-11 (Asia/Manila)
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
 - Active work branch: `bugfix/manual-release-tag`, created from `origin/develop`.
+- Pull request #13 targets `develop` from `bugfix/manual-release-tag` and is
+  awaiting its three-platform CI matrix and owner review.
 - Pull request #11 was merged into `develop`, and recovery pull request #12 was
   merged into `master`.
 - Pull request #9 was merged into `develop`, and release pull request #10 was

@@ -5,7 +5,7 @@ bypass a blocked integration.
 
 ## 1. Review and merge the manual-tag verification fix
 
-- Open and review a pull request from `bugfix/manual-release-tag` into `develop`.
+- Review pull request #13 from `bugfix/manual-release-tag` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
 - Merge the verification fix into `master`; do not create another version tag.
