@@ -1,7 +1,6 @@
 (function () {
   "use strict";
-  const vscode = acquireVsCodeApi();
-  const provider = document.getElementById("provider");
+  const providerName = document.getElementById("provider-name");
   const meter = document.getElementById("meter");
   const fill = document.getElementById("meter-fill");
   const value = document.getElementById("value");
@@ -11,23 +10,12 @@
   const reset = document.getElementById("reset");
   const source = document.getElementById("source");
   const message = document.getElementById("message");
-  const connect = document.getElementById("connect");
-  const refresh = document.getElementById("refresh");
-  const setupClaude = document.getElementById("setup-claude");
-
-  provider.addEventListener("change", () => vscode.postMessage({ type: "selectProvider", provider: provider.value }));
-  connect.addEventListener("click", () => vscode.postMessage({ type: connect.dataset.connected === "true" ? "disconnect" : "connect" }));
-  refresh.addEventListener("click", () => vscode.postMessage({ type: "refresh" }));
-  setupClaude.addEventListener("click", () => vscode.postMessage({ type: "setupClaude" }));
+  const providerNames = { claude: "Claude Code", codex: "Codex", copilot: "GitHub Copilot" };
 
   window.addEventListener("message", (event) => {
     const data = event.data;
     if (!data || data.type !== "state") return;
-    provider.value = data.selectedProvider;
-    setupClaude.hidden = data.selectedProvider !== "claude";
-    connect.dataset.connected = String(Boolean(data.connected));
-    connect.textContent = data.connected ? "Disconnect" : "Connect";
-    refresh.disabled = !data.connected || data.snapshot.state === "loading";
+    providerName.textContent = providerNames[data.selectedProvider] || "AI assistant";
     meter.classList.toggle("indeterminate", !data.gauge.determinate);
     meter.classList.toggle("warning", data.gauge.determinate && data.gauge.value >= 70 && data.gauge.value < 90);
     meter.classList.toggle("danger", data.gauge.determinate && data.gauge.value >= 90);

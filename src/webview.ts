@@ -1,12 +1,7 @@
 import { randomBytes } from "node:crypto";
 import * as vscode from "vscode";
-import type { ProviderId } from "./model";
 import { activeQuotaWindows, selectGauge } from "./model";
 import type { ControllerState, ProviderController } from "./controller";
-
-type InboundMessage =
-  | { type: "selectProvider"; provider: ProviderId }
-  | { type: "connect" | "disconnect" | "refresh" | "setupClaude" };
 
 export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Disposable {
   private view: vscode.WebviewView | undefined;
@@ -23,25 +18,12 @@ export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Dis
       localResourceRoots: [vscode.Uri.joinPath(this.context.extensionUri, "media")]
     };
     view.webview.html = this.html(view.webview);
-    view.webview.onDidReceiveMessage((message: unknown) => void this.handleMessage(message));
     view.onDidChangeVisibility(() => void this.controller.setVisible(view.visible));
     void this.controller.setVisible(view.visible);
     this.postState(this.controller.state);
   }
 
   dispose(): void { this.subscription.dispose(); }
-
-  private async handleMessage(value: unknown): Promise<void> {
-    const message = parseMessage(value);
-    if (!message) return;
-    switch (message.type) {
-      case "selectProvider": await this.controller.select(message.provider); break;
-      case "connect": await this.controller.connect(); break;
-      case "disconnect": await this.controller.disconnect(); break;
-      case "refresh": await this.controller.refresh(); break;
-      case "setupClaude": await vscode.commands.executeCommand("aiTokenChecker.setupClaude"); break;
-    }
-  }
 
   private postState(state: ControllerState): void {
     const snapshot = state.snapshot;
@@ -68,26 +50,14 @@ export class GaugeViewProvider implements vscode.WebviewViewProvider, vscode.Dis
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="${styles}"><title>AI Token Checker</title></head><body>
 <main class="gauge-card">
-<div class="provider-row"><label class="provider-label" for="provider">Assistant</label>
-<select id="provider" aria-label="Selected AI assistant"><option value="claude">Claude Code</option><option value="codex">Codex</option><option value="copilot">GitHub Copilot</option></select></div>
 <section class="usage-pill" aria-live="polite">
+<div class="provider-name" id="provider-name"></div>
 <div class="summary"><strong id="value">—</strong><span id="label">Usage unavailable</span></div>
 <p id="reset" class="reset"></p>
 <div class="meter" id="meter" role="progressbar" aria-label="Usage" aria-valuemin="0" aria-valuemax="100"><div class="meter-fill" id="meter-fill"></div></div>
 </section>
 <section class="details" aria-labelledby="details-heading"><h2 id="details-heading">Usage details</h2><ul id="quota-details" class="quota-details"></ul><p id="tokens" class="tokens"></p></section>
 <p id="source" class="muted"></p><p id="message" class="message"></p>
-<div class="actions"><button id="connect" type="button">Connect</button><button id="refresh" type="button" class="secondary">Refresh</button><button id="setup-claude" type="button" class="secondary">Set up Claude</button></div>
 </main><script nonce="${nonce}" src="${script}"></script></body></html>`;
   }
-}
-
-function parseMessage(value: unknown): InboundMessage | undefined {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
-  const record = value as Record<string, unknown>;
-  if (record.type === "selectProvider" && (record.provider === "claude" || record.provider === "codex" || record.provider === "copilot")) {
-    return { type: "selectProvider", provider: record.provider };
-  }
-  if (record.type === "connect" || record.type === "disconnect" || record.type === "refresh" || record.type === "setupClaude") return { type: record.type };
-  return undefined;
 }

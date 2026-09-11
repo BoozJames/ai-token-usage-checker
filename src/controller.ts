@@ -199,5 +199,5 @@ function validProvider(value: unknown): ProviderId | undefined {
 function consentMessage(provider: ProviderId): string {
   if (provider === "claude") return "Allow AI Token Checker to read the allowlisted local snapshot created by its Claude status-line bridge?";
   if (provider === "codex") return "Allow AI Token Checker to start the local Codex app-server and request account quota and token summaries? Codex may contact OpenAI using its own login.";
-  return "Allow AI Token Checker to request a GitHub sign-in, start the official Copilot SDK runtime, and request account quota? The token stays in memory and is never logged or stored by this extension.";
+  return "Allow AI Token Checker to request a GitHub sign-in, start your installed official Copilot CLI through the bundled SDK client, and request account quota? The token stays in memory and is never logged or stored by this extension.";
 }

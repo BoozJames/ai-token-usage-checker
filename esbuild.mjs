@@ -12,7 +12,10 @@ const context = await esbuild.context({
   platform: "node",
   target: "node20",
   outfile: "dist/extension.js",
-  external: ["vscode", "@github/copilot-sdk"],
+  // Bundle the SDK client code, but use a separately installed official
+  // Copilot CLI at runtime. This keeps the VSIX free of the ~110 MB agent
+  // runtime that a quota-only extension does not need to redistribute.
+  external: ["vscode"],
   logLevel: "info"
 });
 
