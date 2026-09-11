@@ -9,12 +9,15 @@ Last verified: 2026-09-11 (Asia/Manila)
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
 - Active work branch: `feature/status-bar-first`, created from `develop`.
+- Pull request #7 targets `develop` from `feature/status-bar-first` and is awaiting
+  CI and review.
 - The GitHub repository is public. No VS Code Marketplace release has been
   published yet.
 - Tag `v0.3.0` remains the preview tag. Its original release run built all three
   native packages but failed while creating the GitHub release. The recovery
   workflow is retained; do not move or recreate that tag.
-- Version `0.4.0` must be merged through `develop` and `master` before tagging.
+- Version `0.4.0` must be merged through pull request #7 into `develop`, then
+  through a release pull request into `master`, before tagging.
 
 ## Validation
 

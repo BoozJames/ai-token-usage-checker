@@ -3,10 +3,10 @@
 Work from the top. Do not publish or weaken provider security boundaries to
 bypass a blocked integration.
 
-## 1. Review and merge the stable-release changes
+## 1. Review and merge pull request #7
 
-- Push `feature/status-bar-first` and open a pull request into `develop`.
-- Require CI and review before merging.
+- Review pull request #7 from `feature/status-bar-first` into `develop`.
+- Require its CI checks and review before merging.
 - Open a release pull request from `develop` into `master`.
 - Confirm `package.json` is still version `0.4.0` and the packaged VSIX remains
   below the 10 MB limit.
