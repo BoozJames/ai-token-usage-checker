@@ -5,7 +5,7 @@ bypass a blocked integration.
 
 ## 1. Review and merge the Marketplace OIDC recovery
 
-- Open and review a pull request from `bugfix/marketplace-oidc` into `develop`.
+- Review pull request #11 from `bugfix/marketplace-oidc` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
 - Merge the workflow recovery into `master`; do not create another version tag.

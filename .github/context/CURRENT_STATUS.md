@@ -9,6 +9,8 @@ Last verified: 2026-09-11 (Asia/Manila)
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
 - Active work branch: `bugfix/marketplace-oidc`, created from `origin/develop`.
+- Pull request #11 targets `develop` from `bugfix/marketplace-oidc` and is
+  awaiting its three-platform CI matrix and owner review.
 - Pull request #9 was merged into `develop`, and release pull request #10 was
   merged into `master`. Version `1.0.0` is present on both branches.
 - The GitHub repository is public. GitHub release `v1.0.0` exists as a stable
