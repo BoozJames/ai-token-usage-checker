@@ -64,3 +64,8 @@ not move or recreate an existing release tag.
 Manual recovery passes the requested tag through `RELEASE_TAG`. Do not attempt to
 override GitHub's reserved `GITHUB_REF_NAME`, which remains the selected workflow
 branch during `workflow_dispatch`.
+
+If GitHub does not submit the optional manual tag field, the workflow derives
+`v<package version>` from the selected branch. It still requires an exact semantic
+version tag, verifies that the tag exists and is on `master`, and checks that the
+tagged package version matches before building or publishing.
