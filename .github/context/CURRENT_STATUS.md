@@ -8,9 +8,12 @@ Last verified: 2026-09-11 (Asia/Manila)
 - The Marketplace publisher ID is `jamesbooz`; the extension ID is
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `bugfix/manual-release-tag`, created from `origin/develop`.
-- Pull request #13 targets `develop` from `bugfix/manual-release-tag` and is
+- Active work branch: `bugfix/release-tag-resolution`, created from
+  `origin/develop`.
+- Pull request #15 targets `develop` from `bugfix/release-tag-resolution` and is
   awaiting its three-platform CI matrix and owner review.
+- Pull request #13 was merged into `develop`, and verification pull request #14
+  was merged into `master`.
 - Pull request #11 was merged into `develop`, and recovery pull request #12 was
   merged into `master`.
 - Pull request #9 was merged into `develop`, and release pull request #10 was
@@ -31,6 +34,10 @@ Last verified: 2026-09-11 (Asia/Manila)
   GitHub's reserved `GITHUB_REF_NAME` remained `master`; the attempted step-level
   override was ignored. The tag ancestry check passed, and tag `v1.0.0` contains
   package version `1.0.0`. The verifier now prefers the custom `RELEASE_TAG`.
+- A new manual run on fixed commit `abad8ad` still received no `tag` input and
+  therefore fell back to branch name `master`. The recovery now resolves an
+  omitted input to `v<package version>`, validates its format and existence, and
+  passes the resolved tag between jobs as an explicit output.
 
 ## Validation
 

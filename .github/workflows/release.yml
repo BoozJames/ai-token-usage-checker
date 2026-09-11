@@ -6,33 +6,57 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag to rebuild and publish
-        required: true
+        description: Existing release tag; leave blank to use the selected branch package version
+        required: false
         type: string
 
 permissions:
   contents: read
 
-env:
-  RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-
 jobs:
   verify-tag:
     runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.resolve-tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.RELEASE_TAG }}
+          ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
+      - name: Resolve release tag
+        id: resolve-tag
+        shell: bash
+        env:
+          REQUESTED_TAG: ${{ inputs.tag }}
+        run: |
+          tag="${REQUESTED_TAG}"
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then tag="${GITHUB_REF_NAME}"; fi
+          if [[ -z "${tag}" ]]; then
+            package_version=$(node -p "require('./package.json').version")
+            tag="v${package_version}"
+          fi
+          if [[ ! "${tag}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Release tag must match vMAJOR.MINOR.PATCH; got: ${tag}" >&2
+            exit 1
+          fi
+          git fetch --tags origin
+          git rev-parse --verify "refs/tags/${tag}^{commit}" >/dev/null
+          echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
       - name: Verify tag commit is on master
+        env:
+          RELEASE_TAG: ${{ steps.resolve-tag.outputs.tag }}
         run: |
           git fetch origin master
           git merge-base --is-ancestor "${RELEASE_TAG}^{commit}" origin/master
       - name: Verify tag matches package version
+        env:
+          RELEASE_TAG: ${{ steps.resolve-tag.outputs.tag }}
         run: node scripts/verify-release-tag.mjs
 
   build:
     needs: verify-tag
+    env:
+      RELEASE_TAG: ${{ needs.verify-tag.outputs.release_tag }}
     strategy:
       fail-fast: false
       matrix:
@@ -69,7 +93,9 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: build
+    needs: [verify-tag, build]
+    env:
+      RELEASE_TAG: ${{ needs.verify-tag.outputs.release_tag }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -91,8 +117,10 @@ jobs:
           fi
 
   publish-marketplace:
-    needs: build
+    needs: [verify-tag, build]
     if: vars.VSCE_PUBLISH_ENABLED == 'true'
+    env:
+      RELEASE_TAG: ${{ needs.verify-tag.outputs.release_tag }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
