@@ -4,10 +4,11 @@ Work from the top. Do not publish or weaken provider security boundaries to bypa
 
 ## 1. Review and merge the public-preview changes
 
-- Open a pull request from `feature/compact-top-gauge` to `develop`.
+- Open a pull request from `bugfix/release-workflow-recovery` to `develop`.
 - Require CI and review before merge.
-- Confirm that the Marketplace README, MIT license, neutral listing icon, and
-  Preview limitations represent the intended public listing.
+- Open and merge a release pull request from `develop` to `master`.
+- Run **Actions → Release → Run workflow** from `master` with tag `v0.3.0`.
+- Confirm the GitHub pre-release contains three VSIX files and three checksums.
 
 ## 2. Complete Claude validation
 
@@ -20,11 +21,9 @@ Work from the top. Do not publish or weaken provider security boundaries to bypa
 
 ## 3. Complete the Git branch and GitHub release flow
 
-- Open a release pull request from `develop` to `master`.
-- Tag the exact release commit on `master` as `v0.3.0` by following
-  `PUBLISHING.md`.
-- Confirm that the workflow publishes three platform VSIX files and matching
-  SHA-256 checksums in a GitHub pre-release.
+- Keep the existing `v0.3.0` tag unchanged; do not delete, move, or recreate it.
+- Follow the recovery procedure in `PUBLISHING.md` after the workflow fix is on
+  `master`.
 - Merge `master` back into `develop` after release.
 
 Do not publish directly from the feature branch.
