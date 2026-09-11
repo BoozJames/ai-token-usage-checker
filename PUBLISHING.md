@@ -60,3 +60,7 @@ existing tag, and run it from `master`. The workflow checks out and validates th
 tagged source, rebuilds its platform packages, creates a missing release or
 replaces assets on an existing release, and retries Marketplace publishing. Do
 not move or recreate an existing release tag.
+
+Manual recovery passes the requested tag through `RELEASE_TAG`. Do not attempt to
+override GitHub's reserved `GITHUB_REF_NAME`, which remains the selected workflow
+branch during `workflow_dispatch`.
