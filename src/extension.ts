@@ -12,7 +12,6 @@ import { UsageStatusBar } from "./statusBar";
 import { GaugeViewProvider } from "./webview";
 
 export function activate(context: vscode.ExtensionContext): void {
-  const output = vscode.window.createOutputChannel("AI Token Checker");
   const adapters = new Map<ProviderId, ProviderAdapter>();
   adapters.set("claude", new ClaudeAdapter({
     snapshotPath: claudeSnapshotPath(context),
@@ -23,13 +22,13 @@ export function activate(context: vscode.ExtensionContext): void {
   adapters.set("copilot", new CopilotAdapter(async () => {
     const session = await vscode.authentication.getSession("github", ["read:user"], { createIfNone: true });
     return session.accessToken;
-  }, (message) => output.appendLine(message)));
+  }, resolveCopilotExecutable));
   const controller = new ProviderController(context, adapters);
   const viewProvider = new GaugeViewProvider(context, controller);
   const statusBar = new UsageStatusBar(controller);
 
   context.subscriptions.push(
-    controller, viewProvider, statusBar, output,
+    controller, viewProvider, statusBar,
     vscode.window.registerWebviewViewProvider("aiTokenChecker.gauge", viewProvider, { webviewOptions: { retainContextWhenHidden: false } }),
     vscode.commands.registerCommand("aiTokenChecker.refresh", () => controller.refresh()),
     vscode.commands.registerCommand("aiTokenChecker.connect", () => controller.connect()),
@@ -54,33 +53,47 @@ export function deactivate(): void {}
 
 type ProviderPickerItem = vscode.QuickPickItem & {
   provider?: ProviderId;
-  action?: "refresh" | "details";
+  action?: "connect" | "disconnect" | "refresh" | "details" | "setupClaude" | "removeClaude" | "copilotHelp" | "settings" | "privacy";
 };
 
 async function showProviderPicker(controller: ProviderController): Promise<void> {
   const selected = controller.state.selectedProvider;
+  const connected = controller.state.connected;
   const items: ProviderPickerItem[] = [
     {
       label: "Claude Code",
       iconPath: providerIcon("Anthropic.claude-code", new vscode.ThemeIcon("sparkle")),
-      description: selected === "claude" ? "Selected" : "",
+      description: selected === "claude" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
       provider: "claude"
     },
     {
       label: "Codex",
       iconPath: providerIcon("openai.chatgpt", new vscode.ThemeIcon("code")),
-      description: selected === "codex" ? "Selected" : "",
+      description: selected === "codex" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
       provider: "codex"
     },
     {
       label: "GitHub Copilot",
       iconPath: providerIcon("GitHub.copilot-chat", new vscode.ThemeIcon("github")),
-      description: selected === "copilot" ? "Selected" : "",
+      description: selected === "copilot" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
       provider: "copilot"
     },
-    { label: "Actions", kind: vscode.QuickPickItemKind.Separator },
+    { label: "Selected provider", kind: vscode.QuickPickItemKind.Separator },
+    connected
+      ? { label: "$(debug-disconnect) Disconnect", description: "Stop refreshes and revoke consent", action: "disconnect" }
+      : { label: "$(plug) Connect", description: "Review consent and connect", action: "connect" },
     { label: "$(refresh) Refresh selected provider", action: "refresh" },
-    { label: "$(open-preview) Open detailed gauge", action: "details" }
+    ...(selected === "claude" ? [
+      { label: "$(tools) Set up or repair Claude bridge", description: "One-time setup", action: "setupClaude" as const },
+      { label: "$(trash) Remove Claude bridge", description: "Restore the previous status line", action: "removeClaude" as const }
+    ] : []),
+    ...(selected === "copilot" ? [
+      { label: "$(terminal) Install GitHub Copilot CLI", description: "Open the official installation guide", action: "copilotHelp" as const }
+    ] : []),
+    { label: "View and help", kind: vscode.QuickPickItemKind.Separator },
+    { label: "$(open-preview) Open usage details", action: "details" },
+    { label: "$(settings-gear) Open extension settings", action: "settings" },
+    { label: "$(shield) Privacy and data handling", action: "privacy" }
   ];
   const choice = await vscode.window.showQuickPick(items, {
     title: "AI Token Checker",
@@ -93,8 +106,17 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
     if (!controller.state.connected) await controller.connect();
     return;
   }
-  if (choice.action === "refresh") await controller.refresh();
-  else if (choice.action === "details") await vscode.commands.executeCommand("aiTokenChecker.showGauge");
+  switch (choice.action) {
+    case "connect": await controller.connect(); break;
+    case "disconnect": await controller.disconnect(); break;
+    case "refresh": await controller.refresh(); break;
+    case "details": await vscode.commands.executeCommand("aiTokenChecker.showGauge"); break;
+    case "setupClaude": await vscode.commands.executeCommand("aiTokenChecker.setupClaude"); break;
+    case "removeClaude": await vscode.commands.executeCommand("aiTokenChecker.removeClaudeBridge"); break;
+    case "copilotHelp": await vscode.env.openExternal(vscode.Uri.parse("https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli")); break;
+    case "settings": await vscode.commands.executeCommand("workbench.action.openSettings", "@ext:jamesbooz.ai-token-checker"); break;
+    case "privacy": await vscode.env.openExternal(vscode.Uri.parse("https://github.com/BoozJames/ai-token-usage-checker/blob/master/PRIVACY.md")); break;
+  }
 }
 
 function providerIcon(extensionId: string, fallback: vscode.ThemeIcon): vscode.Uri | vscode.ThemeIcon {
@@ -133,4 +155,8 @@ function resolveCodexExecutable(): string {
     }
   }
   return configured;
+}
+
+function resolveCopilotExecutable(): string {
+  return vscode.workspace.getConfiguration("aiTokenChecker.copilot").get<string>("executable", "copilot").trim();
 }

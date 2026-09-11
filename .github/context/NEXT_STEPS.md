@@ -1,49 +1,60 @@
 # Next Steps
 
-Work from the top. Do not publish or weaken provider security boundaries to bypass a blocked integration.
+Work from the top. Do not publish or weaken provider security boundaries to
+bypass a blocked integration.
 
-## 1. Review and merge the public-preview changes
+## 1. Review and merge pull request #7
 
-- Open a pull request from `bugfix/release-workflow-recovery` to `develop`.
-- Require CI and review before merge.
-- Open and merge a release pull request from `develop` to `master`.
-- Run **Actions → Release → Run workflow** from `master` with tag `v0.3.0`.
-- Confirm the GitHub pre-release contains three VSIX files and three checksums.
-
-## 2. Complete Claude validation
-
-- Confirm `claude --version` is `2.1.251` or newer.
-- Confirm Claude Code owns a valid CLI login; do not access or copy its credential storage.
-- Run **AI Token Checker: Set Up Claude Code Bridge** and repair the bridge if it predates the absolute-Node command.
-- Start a fresh Claude CLI session after setup, approve Claude's own status-line trust prompt if shown, and complete one assistant response.
-- Confirm a snapshot appears, the 5-hour/7-day fields are normalized when the account provides them, and the view becomes ready.
-- If this cannot be validated, keep Claude clearly labelled as requiring CLI authentication/status-line support in the public README; do not claim it works through browser login alone.
-
-## 3. Complete the Git branch and GitHub release flow
-
-- Keep the existing `v0.3.0` tag unchanged; do not delete, move, or recreate it.
-- Follow the recovery procedure in `PUBLISHING.md` after the workflow fix is on
-  `master`.
+- Review pull request #7 from `feature/status-bar-first` into `develop`.
+- Confirm its latest-head CI checks remain green, then review and merge it.
+- Open a release pull request from `develop` into `master`.
+- Confirm `package.json` is still version `0.4.0` and the packaged VSIX remains
+  below the 10 MB limit.
 - Merge `master` back into `develop` after release.
 
 Do not publish directly from the feature branch.
 
-## 4. Configure secure Marketplace publishing
+## 2. Complete real-provider validation
 
-- Create or confirm the publisher in the Visual Studio Marketplace management portal.
-- Configure a trusted GitHub publishing policy for this repository and
+- Install the official GitHub Copilot CLI separately, connect Copilot through the
+  status-bar Quick Pick, and verify `account.getQuota` with a real account.
+- Confirm the supported SDK/CLI response matches the extension's provider and
+  source labels. Do not infer dashboard-only metrics.
+- Confirm Claude Code owns a valid CLI login, start a fresh Claude CLI session
+  after bridge setup, and complete one assistant response.
+- Verify Claude 5-hour/7-day fields when the account reports them. A browser-only
+  Claude login is not a supported substitute for Claude CLI authentication.
+- Never capture provider responses, tokens, account identifiers, user paths,
+  prompts, transcripts, or source code in fixtures, issues, screenshots, or this
+  context directory.
+
+## 3. Clean-profile acceptance testing
+
+- Install `ai-token-checker.vsix` in clean VS Code profiles on Windows, macOS,
+  and Linux.
+- Verify the status-bar Quick Pick, provider switching, consent, connect and
+  disconnect, refresh throttling, read-only sidebar details, view movement,
+  themes, keyboard navigation, accessibility, and disposal.
+- Verify no provider work occurs before consent.
+- Verify uninstall and rollback remove only extension-owned Claude settings and
+  files.
+
+## 4. Release `v0.4.0`
+
+- After the release pull request reaches `master`, create and push the annotated
+  tag `v0.4.0` as described in `PUBLISHING.md`.
+- Confirm the GitHub release contains the VSIX files and SHA-256 checksums.
+- Keep the existing `v0.3.0` tag unchanged. Use the documented manual recovery
+  only if the missing preview GitHub release is still wanted.
+
+## 5. Configure secure Marketplace publishing
+
+- Configure Visual Studio Marketplace trusted publishing for this repository and
   `.github/workflows/release.yml`.
-- Prefer `vsce publish --oidc`; do not add a long-lived Marketplace PAT to repository secrets.
-- Set the GitHub Actions repository variable `VSCE_PUBLISH_ENABLED` to `true`
-  only after the policy is configured. The publish job already has only
-  `contents: read` and `id-token: write`.
-- Trigger publishing only for a version tag whose commit is on `master` and whose version matches `package.json`.
-- Publish the platform-specific VSIX files together and retain their SHA-256 checksums in the GitHub release.
-
-## 5. Public-release verification
-
-- Install each packaged target in a clean VS Code profile on its supported operating system.
-- Verify consent, connect/disconnect, refresh throttling, provider switching, view movement, theme behavior, keyboard navigation, and disposal.
-- Verify no background provider work occurs before consent.
-- Verify uninstall/rollback removes only extension-owned Claude settings and files.
-- Confirm the Marketplace page accurately states provider prerequisites and unsupported environments.
+- Use `vsce publish --oidc`; do not add a long-lived Marketplace PAT to repository
+  secrets.
+- Set `VSCE_PUBLISH_ENABLED` to `true` only after the trusted policy is active.
+- Publish only a version tag whose commit is on `master` and whose version matches
+  `package.json`.
+- Confirm the Marketplace page accurately states provider prerequisites,
+  privacy boundaries, metric limitations, and unsupported environments.

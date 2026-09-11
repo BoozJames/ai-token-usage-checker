@@ -57,7 +57,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npx vsce package --pre-release --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
+      - run: npx vsce package ${{ startsWith(env.RELEASE_TAG, 'v0.3.') && '--pre-release' || '' }} --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
+      - name: Enforce compact stable package
+        if: ${{ !startsWith(env.RELEASE_TAG, 'v0.3.') }}
+        run: node scripts/verify-vsix-size.mjs ai-token-checker-${{ matrix.target }}.vsix
       - run: node scripts/checksum.mjs ai-token-checker-${{ matrix.target }}.vsix
       - uses: actions/upload-artifact@v4
         with:
@@ -78,10 +81,10 @@ jobs:
           pattern: release-*
           merge-multiple: true
           path: artifacts
-      - name: Create GitHub pre-release
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${RELEASE_TAG}" artifacts/* --repo "${GITHUB_REPOSITORY}" --verify-tag --generate-notes --prerelease --title "AI Token Checker ${RELEASE_TAG} (Preview)"
+        run: gh release create "${RELEASE_TAG}" artifacts/* --repo "${GITHUB_REPOSITORY}" --verify-tag --generate-notes ${{ startsWith(env.RELEASE_TAG, 'v0.3.') && '--prerelease' || '' }} --title "AI Token Checker ${RELEASE_TAG}"
 
   publish-marketplace:
     needs: build
@@ -104,6 +107,11 @@ jobs:
           pattern: release-*
           merge-multiple: true
           path: artifacts
-      - name: Publish Marketplace pre-release using OIDC
+      - name: Publish to Marketplace using OIDC
         shell: bash
-        run: npx vsce publish --oidc --pre-release --packagePath artifacts/*.vsix
+        run: |
+          release_args=()
+          if [[ "${RELEASE_TAG}" == v0.3.* ]]; then release_args+=(--pre-release); fi
+          for package in artifacts/*.vsix; do
+            npx vsce publish --oidc "${release_args[@]}" --packagePath "${package}"
+          done

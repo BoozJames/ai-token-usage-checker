@@ -2,10 +2,9 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "jamesbooz",
   "license": "MIT",
-  "preview": true,
   "pricing": "Free",
   "icon": "media/icon.png",
   "repository": {
@@ -107,21 +106,6 @@
         }
       ]
     },
-    "menus": {
-      "editor/title": [
-        {
-          "command": "aiTokenChecker.pickProvider",
-          "group": "navigation@100"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "aiTokenChecker.refresh",
-          "when": "view == aiTokenChecker.gauge",
-          "group": "navigation"
-        }
-      ]
-    },
     "configuration": {
       "title": "AI Token Checker",
       "properties": {
@@ -130,6 +114,12 @@
           "default": "codex",
           "scope": "application",
           "description": "Codex executable name or absolute path. It is spawned directly without a shell."
+        },
+        "aiTokenChecker.copilot.executable": {
+          "type": "string",
+          "default": "copilot",
+          "scope": "application",
+          "description": "Official GitHub Copilot CLI executable name or absolute path. It is spawned directly without a shell."
         },
         "aiTokenChecker.refreshIntervalSeconds": {
           "type": "number",
@@ -158,17 +148,15 @@
     "test:unit": "node scripts/test-unit.mjs",
     "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
     "compile:tests": "tsc -p tsconfig.test.json",
-    "package": "npm run check && vsce package --pre-release --out ai-token-checker.vsix",
+    "package": "npm run check && vsce package --out ai-token-checker.vsix && node scripts/verify-vsix-size.mjs ai-token-checker.vsix",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "vscode:prepublish": "npm run build"
   },
-  "dependencies": {
-    "@github/copilot-sdk": "1.0.13"
-  },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@github/copilot-sdk": "1.0.13",
     "@types/node": "20.19.14",
     "@types/vscode": "1.95.0",
-    "@eslint/js": "10.0.1",
     "@typescript-eslint/eslint-plugin": "8.70.0",
     "@typescript-eslint/parser": "8.70.0",
     "@vscode/test-electron": "3.1.0",

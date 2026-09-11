@@ -23,16 +23,20 @@ export class CopilotAdapter implements ProviderAdapter {
 
   constructor(
     private readonly getGitHubToken: () => Promise<string>,
-    private readonly log?: (message: string) => void
+    private readonly executable: () => string
   ) {}
 
   async detect(): Promise<ProviderAvailability> {
-    return { available: true };
+    const executable = this.executable().trim();
+    return executable && !/[\r\n\0]/.test(executable)
+      ? { available: true }
+      : { available: false, reason: "Configure the official GitHub Copilot CLI executable first." };
   }
 
   async connect(): Promise<ConnectionResult> {
     if (this.client) return { connected: true };
-    const { CopilotClient } = await import("@github/copilot-sdk");
+    const executable = this.executable().trim();
+    const { CopilotClient, RuntimeConnection } = await import("@github/copilot-sdk");
     let gitHubToken: string;
     try {
       gitHubToken = await this.getGitHubToken();
@@ -40,11 +44,12 @@ export class CopilotAdapter implements ProviderAdapter {
       return { connected: false, message: "GitHub sign-in was cancelled or unavailable." };
     }
     const client: CopilotClientHandle = new CopilotClient({
+      connection: RuntimeConnection.forStdio({ path: executable }),
       gitHubToken,
       useLoggedInUser: false,
       logLevel: "none",
       enableRemoteSessions: false,
-      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "0.1.0" }
+      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "0.4.0" }
     });
     try {
       await client.start();
@@ -54,7 +59,7 @@ export class CopilotAdapter implements ProviderAdapter {
       await client.forceStop().catch(() => undefined);
       return {
         connected: false,
-        message: error instanceof Error ? error.message : "Could not connect to GitHub Copilot."
+        message: copilotConnectionMessage(error)
       };
     }
   }
@@ -64,7 +69,6 @@ export class CopilotAdapter implements ProviderAdapter {
     if (signal.aborted) throw new Error("Refresh cancelled");
     try {
       const result = await this.client.rpc.account.getQuota({});
-      this.log?.(`getQuota raw response: ${JSON.stringify(result.quotaSnapshots)}`);
       return normalizeCopilot(result.quotaSnapshots);
     } catch (error) {
       if (error instanceof Error && /not authenticated/i.test(error.message)) {
@@ -97,6 +101,13 @@ export class CopilotAdapter implements ProviderAdapter {
   dispose(): void {
     void this.disconnect();
   }
+}
+
+function copilotConnectionMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : "Could not connect to GitHub Copilot.";
+  return /ENOENT|not found|cannot find/i.test(message)
+    ? "GitHub Copilot CLI was not found. Install it, then select GitHub Copilot again from the status bar."
+    : message;
 }
 
 interface CopilotQuota {
@@ -137,7 +148,7 @@ export function normalizeCopilot(
       providerId: "copilot",
       state: quotaWindows.length ? "ready" : "unavailable",
       observedAt: observedAt.toISOString(),
-      source: { label: "GitHub Copilot SDK", accuracy: "provider-reported" },
+      source: { label: "GitHub Copilot SDK + CLI", accuracy: "provider-reported" },
       quotaWindows,
       ...(quotaWindows.length ? {} : {
         message: "The official Copilot SDK reported no active bounded quota. Its response may not include the newer Copilot Free Credits and Inline Suggestions dashboard metrics."

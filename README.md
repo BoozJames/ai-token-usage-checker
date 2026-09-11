@@ -1,92 +1,108 @@
 # AI Token Checker
 
-AI Token Checker is a local-first VS Code extension that shows one honest usage gauge for Claude Code, OpenAI Codex, or GitHub Copilot.
+AI Token Checker puts the remaining quota for Claude Code, Codex, or GitHub
+Copilot in the VS Code status bar. Click it to switch providers, connect,
+refresh, or open the full usage breakdown.
 
-> **Public preview:** version 0.3.x is an early pre-release. Provider APIs and
-> account entitlements differ, so unsupported or absent metrics are shown as
-> unavailable rather than estimated.
+It displays only supported provider-reported values. Missing usage is shown as
+unavailable—it is never guessed or replaced with zero.
 
-## What it shows
+## Quick start
 
-- One selected provider at a time.
-- The most-consumed provider-reported quota window when one exists.
-- A compact sidebar breakdown of every active quota window, including used, remaining, and reset values.
-- Bounded context usage as a fallback.
-- Provider-reported token totals as secondary sidebar details, or an indeterminate bar when no meaningful maximum exists.
-- Source, accuracy, freshness, and reset time alongside the gauge.
+1. Install and sign in to at least one supported provider tool.
+2. Install AI Token Checker from the VS Code Marketplace or from a GitHub
+   release VSIX.
+3. Click **Claude**, **Codex**, or **Copilot** in the bottom status bar.
+4. Select a provider and approve its one-time consent prompt.
 
-The view uses one compact horizontal gauge centered at the top of its container. Move it with **View: Move View** or by dragging **Usage Gauge** to another view container. VS Code does not allow extensions to place a floating gauge over the title bar or at arbitrary screen coordinates.
+The status bar shows the selected provider and remaining percentage. Its menu
+contains connection, refresh, setup, settings, privacy, and detailed-usage
+actions. The Activity Bar view is deliberately read-only: it shows the progress
+bar, every reported quota window, reset times, token details, freshness, and
+data source without repeating setup controls.
 
-A native status item shows only the selected provider and its primary remaining percentage at the inner edge of the bottom-right status group, as close to the center as VS Code's alignment API permits. The sidebar retains the detailed window and token breakdown. The status item and editor-title dashboard button open a Quick Pick for switching providers, refreshing, or opening detailed diagnostics. The editor-title button appears only when a normal editor tab is active; VS Code does not show it on the Welcome page or Chat view. Disable the status item with `AI Token Checker: Status Bar Enabled`; disabling it also stops background provider refresh when the detailed view is closed.
-
-## Install
-
-From the VS Code Marketplace, open the extension page, choose **Switch to
-Pre-Release Version** if prompted, and install **AI Token Checker** from
-publisher `jamesbooz`.
-
-For a GitHub pre-release, download the VSIX for your operating system and its
-matching SHA-256 file, verify the checksum, then run **Extensions: Install from
-VSIX…**. For local development:
-
-```text
-npm ci
-npm run check
-npm run package
-code --install-extension ai-token-checker.vsix
-```
-
-Claude users should update the Claude Code CLI before connecting:
-
-```text
-claude update
-claude --version
-```
-
-Claude Code 2.1.251 or newer is required for provider-reported 5-hour and 7-day quota fields. A newly installed current Claude Code CLI should satisfy this requirement, but the version check remains useful for package-manager, managed, and older installations.
-
-## Connect a provider
-
-Open the AI Token Checker activity-bar view, select a provider, and choose **Connect**. Each integration remains off until you accept its provider-specific consent prompt.
+## Provider setup
 
 ### Claude Code
 
-Choose **Set up Claude**. With confirmation, the extension installs a small status-line bridge in VS Code global storage and adds it to Claude's user `settings.json`. Setup records the validated absolute Node.js executable and requests a 60-second status-line refresh so the bridge does not depend on Claude's shell PATH. If another command already exists, setup offers to compose it: the bridge forwards the original JSON and status-line output unchanged while independently writing the allowlisted metric snapshot. Removal restores the previous command. The bridge allowlists quota percentages, reset times, and current context token counts. It does not copy prompts, completions, session IDs, paths, or credentials into the metric snapshot.
+Requirements: Claude Code 2.1.251 or newer and a Claude CLI login.
 
-If Claude already has a `statusLine` command, the extension will not change it without explicit composition confirmation. The approved bridge invokes that same user-configured command through the platform shell because that is how Claude status-line commands are defined. The command, input, and output are never logged.
+1. Install or update Claude Code, then authenticate it using Claude's own CLI.
+2. Click the AI Token Checker status item and select **Claude Code**.
+3. In the same menu, choose **Set up or repair Claude bridge**.
+4. Restart the Claude CLI and complete one assistant response.
 
-Use **AI Token Checker: Remove Claude Code Bridge** to remove settings installed by this extension. If the setting changed after installation, it is left untouched.
-
-The bridge receives status-line events from a Claude Code CLI session. Start or restart `claude` in a terminal and send a message after setup; using only the graphical Claude panel may not produce a terminal status-line event. Claude rate-limit fields require Claude Code 2.1.251 or newer, a supported account, and the first API response.
+The bridge receives Claude's documented status-line JSON and writes one
+allowlisted local snapshot containing quota, reset, and context-token metrics.
+It does not read transcripts or Claude credentials. A claude.ai browser login
+cannot be imported into the Claude CLI.
 
 ### Codex
 
-The extension spawns the configured `codex` executable directly as `codex app-server`, performs the required initialization handshake, and requests `account/rateLimits/read` plus `account/usage/read`. When the default executable name is used, it can locate the Codex binary bundled with the official OpenAI VS Code extension. Codex owns authentication. API-key-only or unsupported accounts may not return ChatGPT quota/token activity.
+Requirements: an authenticated Codex CLI or the official OpenAI VS Code
+extension containing Codex.
 
-The executable can be changed with `aiTokenChecker.codex.executable`. It must be an executable name or absolute path; no shell command or arguments are accepted.
+Click the status item and select **Codex**. AI Token Checker starts
+`codex app-server` directly without a shell and asks it for the documented
+account rate limits and usage summary. Codex continues to own authentication.
+
+If auto-detection does not find Codex, open **Open extension settings** from the
+status menu and set `AI Token Checker: Codex Executable` to the executable's
+absolute path.
 
 ### GitHub Copilot
 
-After consent, the extension requests a GitHub session through VS Code's official Authentication API, passes that token directly to the pinned official GitHub Copilot SDK runtime, and calls `account.getQuota`. The token is kept in memory only and is never logged or written by this extension. Existing Copilot Chat token totals are not exposed through a supported cross-extension interface, so the gauge displays official bounded quota only and says when session tokens are unavailable.
+Requirements: the official GitHub Copilot CLI and an eligible Copilot account.
+The CLI is a separate prerequisite so AI Token Checker does not redistribute
+GitHub's roughly 110 MB agent runtime inside this small extension.
 
-## Commands
+Install the CLI using one official method:
 
-- **AI Token Checker: Refresh**
-- **AI Token Checker: Connect Selected Provider**
-- **AI Token Checker: Disconnect Selected Provider**
-- **AI Token Checker: Set Up Claude Code Bridge**
-- **AI Token Checker: Remove Claude Code Bridge**
+```text
+# Windows
+winget install GitHub.Copilot
 
-## Development
+# Any supported platform with Node.js 22+
+npm install -g @github/copilot
+```
 
-Requires Node.js 20.19+ and VS Code 1.95+. Press `F5` to start the Extension Development Host.
+Then click the status item and select **GitHub Copilot**. VS Code requests the
+GitHub sign-in, keeps its token in memory, and passes it directly to the bundled
+official SDK client, which starts your installed `copilot` executable without a
+shell. The status menu also links to GitHub's official installation guide.
 
-The packaged `PRIVACY.md`, `ACCURACY.md`, `SECURITY.md`, and `SUPPORT.md` files
-contain the detailed user-facing policies. Maintainers should follow the
-repository's `CONTRIBUTING.md` and `PUBLISHING.md` files.
+If the command is not on `PATH`, set `AI Token Checker: Copilot Executable` to
+its absolute path in the extension settings.
 
-The provider Quick Pick displays artwork directly from the installed official Claude Code, OpenAI Codex, and GitHub Copilot extensions. Those files are not copied into AI Token Checker. A VS Code theme icon is used when an official provider extension is unavailable.
+## Privacy
 
-## Current scope
+AI Token Checker has no developer-controlled telemetry, analytics, or usage
+history.
 
-V1 targets local desktop VS Code on Windows, macOS, and Linux x64. WSL, Remote SSH, Dev Containers, VS Code for the Web, history, telemetry, and additional providers are intentionally deferred.
+- It does not read prompts, assistant transcripts, source files, Claude or
+  Codex credential files, account emails, or API keys.
+- It does not log raw provider responses or authentication tokens.
+- Provider access begins only after explicit consent.
+- Usage snapshots stay in memory, except for the single allowlisted Claude
+  bridge snapshot that is atomically replaced in VS Code global storage.
+- Network access is performed by the selected provider's own authenticated
+  process or official SDK runtime.
+
+See [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), and
+[ACCURACY.md](ACCURACY.md) for the complete boundaries and metric semantics.
+
+## Supported environment
+
+- Local desktop VS Code 1.95 or newer.
+- Windows, macOS, and Linux.
+- WSL, Remote SSH, Dev Containers, and VS Code for the Web are not supported in
+  this first stable release.
+- Provider plans and APIs differ; some accounts may not expose every quota
+  window shown in the provider's own application.
+
+## Help and contributing
+
+For troubleshooting and safe bug-reporting guidance, see
+[SUPPORT.md](SUPPORT.md). Developers and contributors should start with
+[CONTRIBUTING.md](CONTRIBUTING.md); implementation and release details stay out
+of this user guide.
