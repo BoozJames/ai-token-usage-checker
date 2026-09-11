@@ -10,6 +10,8 @@ Last verified: 2026-09-11 (Asia/Manila)
 - Repository default branch: `master`.
 - Active work branch: `bugfix/release-output-reference`, created from
   `origin/develop`.
+- Pull request #17 targets `develop` from `bugfix/release-output-reference` and
+  is awaiting CI and owner review.
 - Pull request #15 was merged into `develop`, and release pull request #16 was
   merged into `master`.
 - Pull request #13 was merged into `develop`, and verification pull request #14
