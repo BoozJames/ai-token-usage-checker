@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 — First stable release
+## 1.0.0 — First stable release
 
 - Made the bottom status item and its Quick Pick the primary control surface.
 - Simplified the sidebar to a read-only usage gauge and detailed quota breakdown.

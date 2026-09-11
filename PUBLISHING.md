@@ -5,18 +5,18 @@ tag or publish a commit directly from a feature branch.
 
 ## First stable release
 
-1. Open and merge a pull request from `feature/status-bar-first` to `develop`
-   after CI and review pass.
+1. Open and merge the version-bump pull request into `develop` after CI and
+   review pass.
 2. Open and merge a release pull request from `develop` to `master`.
-3. Confirm that `package.json` contains version `0.4.0`, publisher
+3. Confirm that `package.json` contains version `1.0.0`, publisher
    `jamesbooz`, and no Preview flag.
 4. Create and push the annotated tag from the exact `master` commit:
 
    ```text
    git switch master
    git pull --ff-only origin master
-   git tag -a v0.4.0 -m "AI Token Checker 0.4.0"
-   git push origin v0.4.0
+   git tag -a v1.0.0 -m "AI Token Checker 1.0.0"
+   git push origin v1.0.0
    ```
 
 The `Release` GitHub Actions workflow verifies that the tag is on `master` and
@@ -45,8 +45,9 @@ The job requests only `contents: read` and `id-token: write` and runs
 `vsce publish --oidc`. Do not add a Marketplace PAT to the repository.
 
 VS Code Marketplace versions must use `major.minor.patch`; suffixes such as
-`-alpha` are not supported. This project uses odd minor versions (`0.3.x`) for
-previews and even minor versions (`0.4.x`) for stable releases.
+`-alpha` are not supported. Stable releases follow semantic versioning from
+`1.0.0`; Marketplace pre-release status is controlled by the packaging flag,
+not an odd/even minor-version convention.
 
 ## Recovering a failed release job
 
