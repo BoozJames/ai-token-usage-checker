@@ -89,7 +89,7 @@ export class CodexAdapter implements ProviderAdapter {
     this.process.stdout.on("data", (chunk: string) => this.handleChunk(chunk));
 
     await this.request("initialize", {
-      clientInfo: { name: "ai_token_checker", title: "AI Token Checker", version: "0.4.0" },
+      clientInfo: { name: "ai_token_checker", title: "AI Token Checker", version: "1.0.0" },
       capabilities: { optOutNotificationMethods: ["thread/started", "item/agentMessage/delta"] }
     });
     this.send({ method: "initialized", params: {} });

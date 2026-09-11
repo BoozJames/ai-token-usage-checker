@@ -4,21 +4,20 @@ Last verified: 2026-09-11 (Asia/Manila)
 
 ## Repository and release state
 
-- Package: `ai-token-checker` version `0.4.0`, prepared as the first stable release.
+- Package: `ai-token-checker` version `1.0.0`, prepared as the first stable release.
 - The Marketplace publisher ID is `jamesbooz`; the extension ID is
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `feature/status-bar-first`, created from `develop`.
-- Pull request #7 targets `develop` from `feature/status-bar-first`. Its Windows,
-  Linux, and macOS CI matrix passed on implementation commit `ff4fb97`; it is
-  clean and mergeable, pending review and the final documentation-only rerun.
+- Active work branch: `feature/v1-stable-release`, created from `origin/develop`.
+- Pull request #7 was merged into `develop`, and release pull request #8 was
+  merged into `master`. Their Windows, Linux, and macOS CI matrices passed.
 - The GitHub repository is public. No VS Code Marketplace release has been
   published yet.
 - Tag `v0.3.0` remains the preview tag. Its original release run built all three
   native packages but failed while creating the GitHub release. The recovery
   workflow is retained; do not move or recreate that tag.
-- Version `0.4.0` must be merged through pull request #7 into `develop`, then
-  through a release pull request into `master`, before tagging.
+- `master` currently contains package version `0.4.0`. Version `1.0.0` must be
+  merged through `develop` and then `master` before tagging `v1.0.0`.
 
 ## Validation
 
@@ -106,7 +105,7 @@ the extension connects to a separately installed official Copilot CLI.
 ## Marketplace readiness
 
 - The manifest has the confirmed publisher, MIT license, public repository and
-  support links, free pricing, a neutral 256x256 icon, and stable `0.4.0`
+  support links, free pricing, a neutral 256x256 icon, and stable `1.0.0`
   metadata.
 - README is user-focused; contributor and release details live in
   `CONTRIBUTING.md` and `PUBLISHING.md`.
@@ -117,4 +116,4 @@ the extension connects to a separately installed official Copilot CLI.
   checksums, and creates a GitHub release.
 - Optional Marketplace publishing uses OIDC and remains disabled until trusted
   publishing is configured and the repository variable is enabled.
-- Do not publish or tag `v0.4.0` from the feature branch.
+- Do not publish or tag `v1.0.0` from the feature branch.

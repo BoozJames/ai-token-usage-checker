@@ -49,7 +49,7 @@ export class CopilotAdapter implements ProviderAdapter {
       useLoggedInUser: false,
       logLevel: "none",
       enableRemoteSessions: false,
-      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "0.4.0" }
+      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "1.0.0" }
     });
     try {
       await client.start();
