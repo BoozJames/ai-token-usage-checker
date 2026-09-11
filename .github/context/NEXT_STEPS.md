@@ -5,8 +5,7 @@ bypass a blocked integration.
 
 ## 1. Review and merge resilient release-tag resolution
 
-- Open and review a pull request from `bugfix/release-tag-resolution` into
-  `develop`.
+- Review pull request #15 from `bugfix/release-tag-resolution` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
 - Merge the verification fix into `master`; do not create another version tag.
