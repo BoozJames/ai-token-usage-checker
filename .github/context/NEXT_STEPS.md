@@ -6,7 +6,7 @@ bypass a blocked integration.
 ## 1. Review and merge pull request #7
 
 - Review pull request #7 from `feature/status-bar-first` into `develop`.
-- Require its CI checks and review before merging.
+- Confirm its latest-head CI checks remain green, then review and merge it.
 - Open a release pull request from `develop` into `master`.
 - Confirm `package.json` is still version `0.4.0` and the packaged VSIX remains
   below the 10 MB limit.

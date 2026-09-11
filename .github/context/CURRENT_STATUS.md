@@ -9,8 +9,9 @@ Last verified: 2026-09-11 (Asia/Manila)
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
 - Active work branch: `feature/status-bar-first`, created from `develop`.
-- Pull request #7 targets `develop` from `feature/status-bar-first` and is awaiting
-  CI and review.
+- Pull request #7 targets `develop` from `feature/status-bar-first`. Its Windows,
+  Linux, and macOS CI matrix passed on implementation commit `ff4fb97`; it is
+  clean and mergeable, pending review and the final documentation-only rerun.
 - The GitHub repository is public. No VS Code Marketplace release has been
   published yet.
 - Tag `v0.3.0` remains the preview tag. Its original release run built all three
