@@ -3,12 +3,13 @@
 Work from the top. Do not publish or weaken provider security boundaries to
 bypass a blocked integration.
 
-## 1. Review and merge resilient release-tag resolution
+## 1. Review and merge the release-output reference fix
 
-- Review pull request #15 from `bugfix/release-tag-resolution` into `develop`.
+- Review the pull request from `bugfix/release-output-reference` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
-- Merge the verification fix into `master`; do not create another version tag.
+- Merge the output-reference fix into `master`; do not create another version
+  tag.
 
 Do not publish directly from the feature branch.
 

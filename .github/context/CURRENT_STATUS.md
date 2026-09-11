@@ -8,10 +8,10 @@ Last verified: 2026-09-11 (Asia/Manila)
 - The Marketplace publisher ID is `jamesbooz`; the extension ID is
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `bugfix/release-tag-resolution`, created from
+- Active work branch: `bugfix/release-output-reference`, created from
   `origin/develop`.
-- Pull request #15 targets `develop` from `bugfix/release-tag-resolution` and is
-  awaiting its three-platform CI matrix and owner review.
+- Pull request #15 was merged into `develop`, and release pull request #16 was
+  merged into `master`.
 - Pull request #13 was merged into `develop`, and verification pull request #14
   was merged into `master`.
 - Pull request #11 was merged into `develop`, and recovery pull request #12 was
@@ -38,6 +38,11 @@ Last verified: 2026-09-11 (Asia/Manila)
   therefore fell back to branch name `master`. The recovery now resolves an
   omitted input to `v<package version>`, validates its format and existence, and
   passes the resolved tag between jobs as an explicit output.
+- Manual release run `34596649271` on commit `e62732d` successfully resolved the
+  tag and verified its ancestry, but the following version step still received
+  an empty output and fell back to `GITHUB_REF_NAME=master`. The resolver step ID
+  now uses an underscore so its output is referenced unambiguously in GitHub
+  expressions.
 
 ## Validation
 
