@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 
-const tag = process.env.GITHUB_REF_NAME;
+const tag = process.env.RELEASE_TAG || process.env.GITHUB_REF_NAME;
 if (!tag) {
-  throw new Error("GITHUB_REF_NAME is required");
+  throw new Error("RELEASE_TAG or GITHUB_REF_NAME is required");
 }
 
 const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));

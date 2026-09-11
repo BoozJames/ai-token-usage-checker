@@ -30,8 +30,6 @@ jobs:
           git merge-base --is-ancestor "${RELEASE_TAG}^{commit}" origin/master
       - name: Verify tag matches package version
         run: node scripts/verify-release-tag.mjs
-        env:
-          GITHUB_REF_NAME: ${{ env.RELEASE_TAG }}
 
   build:
     needs: verify-tag
