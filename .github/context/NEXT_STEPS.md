@@ -3,9 +3,10 @@
 Work from the top. Do not publish or weaken provider security boundaries to
 bypass a blocked integration.
 
-## 1. Review and merge the manual-tag verification fix
+## 1. Review and merge resilient release-tag resolution
 
-- Review pull request #13 from `bugfix/manual-release-tag` into `develop`.
+- Open and review a pull request from `bugfix/release-tag-resolution` into
+  `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
 - Merge the verification fix into `master`; do not create another version tag.
