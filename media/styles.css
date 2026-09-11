@@ -14,34 +14,9 @@ body { margin: 0; padding: 10px 12px; }
   gap: 8px;
 }
 
-.provider-row {
-  display: grid;
-  grid-template-columns: auto minmax(120px, 1fr);
-  align-items: center;
-  gap: 8px;
-}
-
-.provider-label, .muted, .reset {
+.muted, .reset {
   color: var(--vscode-descriptionForeground);
   font-size: 0.85em;
-}
-
-select, button {
-  min-height: 28px;
-  padding: 4px 8px;
-  border: 1px solid var(--vscode-input-border, transparent);
-  font: inherit;
-}
-
-select {
-  width: 100%;
-  color: var(--vscode-input-foreground);
-  background: var(--vscode-input-background);
-}
-
-select:focus, button:focus {
-  outline: 1px solid var(--vscode-focusBorder);
-  outline-offset: 2px;
 }
 
 .usage-pill {
@@ -61,6 +36,13 @@ select:focus, button:focus {
 }
 
 .summary strong { font-size: 1em; }
+
+.provider-name {
+  margin-bottom: 5px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 0.82em;
+  font-weight: 600;
+}
 
 .summary span, .reset {
   overflow: hidden;
@@ -132,25 +114,6 @@ select:focus, button:focus {
 .message[data-state="stale"] {
   color: var(--vscode-notificationsWarningIcon-foreground);
 }
-
-.actions { display: flex; flex-wrap: wrap; gap: 6px; }
-
-button {
-  cursor: pointer;
-  color: var(--vscode-button-foreground);
-  background: var(--vscode-button-background);
-  border-color: transparent;
-}
-
-button:hover { background: var(--vscode-button-hoverBackground); }
-
-button.secondary {
-  color: var(--vscode-button-secondaryForeground);
-  background: var(--vscode-button-secondaryBackground);
-}
-
-button.secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
-button:disabled { cursor: default; opacity: 0.5; }
 
 @keyframes loading {
   from { transform: translateX(-120%); }

@@ -3,25 +3,25 @@
 AI Token Checker uses the repository branch policy in `CONTRIBUTING.md`. Do not
 tag or publish a commit directly from a feature branch.
 
-## First public preview
+## First stable release
 
-1. Open and merge a pull request from `feature/compact-top-gauge` to `develop`
+1. Open and merge a pull request from `feature/status-bar-first` to `develop`
    after CI and review pass.
 2. Open and merge a release pull request from `develop` to `master`.
-3. Confirm that `package.json` contains version `0.3.0`, publisher
-   `jamesbooz`, and `preview: true`.
+3. Confirm that `package.json` contains version `0.4.0`, publisher
+   `jamesbooz`, and no Preview flag.
 4. Create and push the annotated tag from the exact `master` commit:
 
    ```text
    git switch master
    git pull --ff-only origin master
-   git tag -a v0.3.0 -m "AI Token Checker 0.3.0 public preview"
-   git push origin v0.3.0
+   git tag -a v0.4.0 -m "AI Token Checker 0.4.0"
+   git push origin v0.4.0
    ```
 
 The `Release` GitHub Actions workflow verifies that the tag is on `master` and
-matches `package.json`, builds Windows, Linux, and macOS x64 pre-release VSIX
-files, creates SHA-256 checksums, and attaches them to a GitHub pre-release.
+matches `package.json`, builds Windows, Linux, and macOS x64 VSIX files, creates
+SHA-256 checksums, and attaches them to a GitHub release.
 
 Afterward, merge `master` back into `develop` through a pull request.
 
@@ -44,10 +44,9 @@ Before enabling it:
 The job requests only `contents: read` and `id-token: write` and runs
 `vsce publish --oidc`. Do not add a Marketplace PAT to the repository.
 
-The first Marketplace upload is a pre-release. VS Code Marketplace versions
-must use `major.minor.patch`; suffixes such as `-alpha` are not supported. This
-project uses odd minor versions (`0.3.x`) for previews and reserves the next
-even minor line (`0.4.x`) for a stable release.
+VS Code Marketplace versions must use `major.minor.patch`; suffixes such as
+`-alpha` are not supported. This project uses odd minor versions (`0.3.x`) for
+previews and even minor versions (`0.4.x`) for stable releases.
 
 ## Recovering a failed release job
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — First stable release
+
+- Made the bottom status item and its Quick Pick the primary control surface.
+- Simplified the sidebar to a read-only usage gauge and detailed quota breakdown.
+- Removed the low-visibility editor-title action.
+- Reduced the package by using a separately installed official Copilot CLI and bundling only the SDK client code.
+- Removed raw Copilot quota-response logging and documented the verified privacy boundaries.
+- Rewrote the README as a user-focused installation and setup guide.
+
 ## 0.3.0 — Public preview
 
 - Prepared the first public Marketplace pre-release under the MIT License.

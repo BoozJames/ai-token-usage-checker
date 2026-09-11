@@ -6,8 +6,8 @@
 - `src/controller.ts`: consent, provider lifecycle, refresh scheduling, stale-state handling, and persistence.
 - `src/providers/`: Claude, Codex, and Copilot adapters.
 - `src/claudeSetup.ts` and `resources/claude-bridge.cjs`: consented Claude status-line installation, allowlisting, composition, and rollback.
-- `src/webview.ts`, `media/main.js`, and `media/styles.css`: restricted webview and detailed sidebar UI.
-- `src/statusBar.ts` and `src/extension.ts`: native VS Code indicators, commands, and provider picker.
+- `src/webview.ts`, `media/main.js`, and `media/styles.css`: restricted, read-only webview and detailed sidebar UI.
+- `src/statusBar.ts` and `src/extension.ts`: primary status-bar indicator, commands, and provider/setup picker.
 - `.github/workflows/`: CI and private GitHub release automation.
 
 ## Gauge rules
@@ -26,7 +26,7 @@
 - Never log tokens, credentials, raw provider responses, account identifiers, prompts, source code, or filesystem paths.
 - Spawn Codex directly without a shell. Use a shell for a pre-existing Claude status-line command only after explicit composition consent.
 - Bound input size, output size, runtime, cancellation, and error text at every process boundary.
-- Keep the webview CSP restrictive, scripts nonce-based, messages validated, and resources allowlisted.
+- Keep the webview CSP restrictive, scripts nonce-based, resources allowlisted, and the sidebar free of webview-to-host commands unless a future feature strictly requires a validated message.
 - Persist only provider choice, consent, and the minimum Claude rollback metadata. Keep usage history out of v1.
 - Use only documented provider interfaces. Unsupported or missing data must remain visibly unavailable.
 

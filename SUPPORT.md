@@ -1,6 +1,6 @@
 # Support
 
-AI Token Checker is a public preview. Questions, reproducible bugs, and feature
+Questions, reproducible bugs, and feature
 requests are welcome in [GitHub Issues](https://github.com/BoozJames/ai-token-usage-checker/issues).
 
 Before opening an issue:
@@ -19,4 +19,4 @@ paths in an issue or screenshot.
 Report security vulnerabilities through GitHub's private vulnerability
 reporting feature as described in `SECURITY.md`, not through a public issue.
 
-Only the latest published preview is supported before the first stable release.
+Only the latest published stable version is supported.
