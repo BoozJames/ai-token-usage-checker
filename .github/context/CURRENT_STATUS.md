@@ -8,9 +8,9 @@ Last verified: 2026-09-11 (Asia/Manila)
 - The Marketplace publisher ID is `jamesbooz`; the extension ID is
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `bugfix/marketplace-oidc`, created from `origin/develop`.
-- Pull request #11 targets `develop` from `bugfix/marketplace-oidc` and is
-  awaiting its three-platform CI matrix and owner review.
+- Active work branch: `bugfix/manual-release-tag`, created from `origin/develop`.
+- Pull request #11 was merged into `develop`, and recovery pull request #12 was
+  merged into `master`.
 - Pull request #9 was merged into `develop`, and release pull request #10 was
   merged into `master`. Version `1.0.0` is present on both branches.
 - The GitHub repository is public. GitHub release `v1.0.0` exists as a stable
@@ -25,6 +25,10 @@ Last verified: 2026-09-11 (Asia/Manila)
 - Repository variable `VSCE_PUBLISH_ENABLED` is `true`. The recovery pins the
   exact official `@vscode/vsce@3.9.3-12` prerelease, which recognizes `--oidc`,
   only in the publishing job. No PAT is introduced.
+- Manual recovery run `34579283781` stopped at version verification because
+  GitHub's reserved `GITHUB_REF_NAME` remained `master`; the attempted step-level
+  override was ignored. The tag ancestry check passed, and tag `v1.0.0` contains
+  package version `1.0.0`. The verifier now prefers the custom `RELEASE_TAG`.
 
 ## Validation
 
