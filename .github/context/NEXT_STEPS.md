@@ -3,14 +3,12 @@
 Work from the top. Do not publish or weaken provider security boundaries to
 bypass a blocked integration.
 
-## 1. Review and merge the `1.0.0` version bump
+## 1. Review and merge the Marketplace OIDC recovery
 
-- Review pull request #9 from `feature/v1-stable-release` into `develop`.
+- Open and review a pull request from `bugfix/marketplace-oidc` into `develop`.
 - Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
-- Confirm `package.json` is version `1.0.0` and the packaged VSIX remains
-  below the 10 MB limit.
-- Merge `master` back into `develop` after release.
+- Merge the workflow recovery into `master`; do not create another version tag.
 
 Do not publish directly from the feature branch.
 
@@ -39,11 +37,13 @@ Do not publish directly from the feature branch.
 - Verify uninstall and rollback remove only extension-owned Claude settings and
   files.
 
-## 4. Release `v1.0.0`
+## 4. Recover `v1.0.0` Marketplace publishing
 
-- After the release pull request reaches `master`, create and push the annotated
-  tag `v1.0.0` as described in `PUBLISHING.md`.
-- Confirm the GitHub release contains the VSIX files and SHA-256 checksums.
+- After the recovery reaches `master`, open **Actions → Release → Run workflow**
+  from `master`, enter existing tag `v1.0.0`, and run it.
+- Confirm the existing GitHub release retains the three VSIX files and SHA-256
+  checksums, and confirm the Marketplace publishing job succeeds.
+- Do not delete, move, or recreate tag `v1.0.0`.
 - Keep the existing `v0.3.0` tag unchanged. Use the documented manual recovery
   only if the missing preview GitHub release is still wanted.
 

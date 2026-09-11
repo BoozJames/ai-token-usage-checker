@@ -8,19 +8,21 @@ Last verified: 2026-09-11 (Asia/Manila)
 - The Marketplace publisher ID is `jamesbooz`; the extension ID is
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `feature/v1-stable-release`, created from `origin/develop`.
-- Pull request #9 targets `develop` from `feature/v1-stable-release`. Its
-  Windows, Linux, and macOS CI matrix passed; it is clean and mergeable, pending
-  owner review.
-- Pull request #7 was merged into `develop`, and release pull request #8 was
-  merged into `master`. Their Windows, Linux, and macOS CI matrices passed.
-- The GitHub repository is public. No VS Code Marketplace release has been
-  published yet.
+- Active work branch: `bugfix/marketplace-oidc`, created from `origin/develop`.
+- Pull request #9 was merged into `develop`, and release pull request #10 was
+  merged into `master`. Version `1.0.0` is present on both branches.
+- The GitHub repository is public. GitHub release `v1.0.0` exists as a stable
+  release with three platform VSIX files and matching checksums. No VS Code
+  Marketplace release has been published yet.
 - Tag `v0.3.0` remains the preview tag. Its original release run built all three
   native packages but failed while creating the GitHub release. The recovery
   workflow is retained; do not move or recreate that tag.
-- `master` currently contains package version `0.4.0`. Version `1.0.0` must be
-  merged through `develop` and then `master` before tagging `v1.0.0`.
+- Tag `v1.0.0` points to the version `1.0.0` merge on `master`. Its build and
+  GitHub release jobs passed, but Marketplace publishing failed because stable
+  `@vscode/vsce@3.9.2` does not recognize the documented hidden `--oidc` option.
+- Repository variable `VSCE_PUBLISH_ENABLED` is `true`. The recovery pins the
+  exact official `@vscode/vsce@3.9.3-12` prerelease, which recognizes `--oidc`,
+  only in the publishing job. No PAT is introduced.
 
 ## Validation
 
@@ -117,6 +119,7 @@ the extension connects to a separately installed official Copilot CLI.
 - The tag workflow verifies that a tag is on `master` and matches
   `package.json`, builds packages on the supported operating systems, creates
   checksums, and creates a GitHub release.
-- Optional Marketplace publishing uses OIDC and remains disabled until trusted
-  publishing is configured and the repository variable is enabled.
-- Do not publish or tag `v1.0.0` from the feature branch.
+- Marketplace publishing uses OIDC and is enabled by the repository variable.
+  The trusted-publishing policy must remain configured in the Marketplace.
+- Do not move or recreate `v1.0.0`. After the recovery workflow reaches
+  `master`, use its manual dispatch with the existing tag.

@@ -41,8 +41,11 @@ Before enabling it:
 3. Confirm the extension name and display name are still available immediately
    before the first publish.
 
-The job requests only `contents: read` and `id-token: write` and runs
-`vsce publish --oidc`. Do not add a Marketplace PAT to the repository.
+The job requests only `contents: read` and `id-token: write`. It pins the exact
+official `@vscode/vsce@3.9.3-12` prerelease because the current stable `3.9.2`
+does not yet recognize `--oidc`. Replace that pin with a stable VSCE version as
+soon as trusted publishing is included in a stable release. Do not add a
+Marketplace PAT to the repository.
 
 VS Code Marketplace versions must use `major.minor.patch`; suffixes such as
 `-alpha` are not supported. Stable releases follow semantic versioning from
@@ -51,9 +54,9 @@ not an odd/even minor-version convention.
 
 ## Recovering a failed release job
 
-If a tag-triggered run builds successfully but fails before creating its GitHub
-release, first merge the workflow fix through `develop` and `master`. Then open
-**Actions → Release → Run workflow**, enter the existing tag such as `v0.3.0`,
-and run it from `master`. The workflow checks out and validates the tagged
-source, rebuilds its platform packages, and creates the missing release. Do not
-move or recreate an existing release tag.
+If a tag-triggered run fails after building, first merge the workflow fix through
+`develop` and `master`. Then open **Actions → Release → Run workflow**, enter the
+existing tag, and run it from `master`. The workflow checks out and validates the
+tagged source, rebuilds its platform packages, creates a missing release or
+replaces assets on an existing release, and retries Marketplace publishing. Do
+not move or recreate an existing release tag.
