@@ -17,14 +17,14 @@ jobs:
   verify-tag:
     runs-on: ubuntu-latest
     outputs:
-      release_tag: ${{ steps.resolve-tag.outputs.tag }}
+      release_tag: ${{ steps.resolve_tag.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.tag || github.ref }}
           fetch-depth: 0
       - name: Resolve release tag
-        id: resolve-tag
+        id: resolve_tag
         shell: bash
         env:
           REQUESTED_TAG: ${{ inputs.tag }}
@@ -44,13 +44,13 @@ jobs:
           echo "tag=${tag}" >> "${GITHUB_OUTPUT}"
       - name: Verify tag commit is on master
         env:
-          RELEASE_TAG: ${{ steps.resolve-tag.outputs.tag }}
+          RELEASE_TAG: ${{ steps.resolve_tag.outputs.tag }}
         run: |
           git fetch origin master
           git merge-base --is-ancestor "${RELEASE_TAG}^{commit}" origin/master
       - name: Verify tag matches package version
         env:
-          RELEASE_TAG: ${{ steps.resolve-tag.outputs.tag }}
+          RELEASE_TAG: ${{ steps.resolve_tag.outputs.tag }}
         run: node scripts/verify-release-tag.mjs
 
   build:
