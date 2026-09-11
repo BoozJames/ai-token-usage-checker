@@ -9,7 +9,7 @@ export async function run(): Promise<void> {
     version?: unknown;
     contributes?: { menus?: Record<string, unknown>; configuration?: { properties?: Record<string, unknown> } };
   };
-  assert.equal(manifest.version, "0.4.0");
+  assert.equal(manifest.version, "1.0.0");
   assert.equal(manifest.contributes?.menus?.["editor/title"], undefined, "editor-title action should be removed");
   assert.equal(manifest.contributes?.menus?.["view/title"], undefined, "sidebar title actions should be removed");
   assert.ok(manifest.contributes?.configuration?.properties?.["aiTokenChecker.copilot.executable"]);

@@ -3,12 +3,12 @@
 Work from the top. Do not publish or weaken provider security boundaries to
 bypass a blocked integration.
 
-## 1. Review and merge pull request #7
+## 1. Review and merge the `1.0.0` version bump
 
-- Review pull request #7 from `feature/status-bar-first` into `develop`.
-- Confirm its latest-head CI checks remain green, then review and merge it.
+- Review pull request #9 from `feature/v1-stable-release` into `develop`.
+- Confirm its latest-head CI checks are green, then merge it.
 - Open a release pull request from `develop` into `master`.
-- Confirm `package.json` is still version `0.4.0` and the packaged VSIX remains
+- Confirm `package.json` is version `1.0.0` and the packaged VSIX remains
   below the 10 MB limit.
 - Merge `master` back into `develop` after release.
 
@@ -39,10 +39,10 @@ Do not publish directly from the feature branch.
 - Verify uninstall and rollback remove only extension-owned Claude settings and
   files.
 
-## 4. Release `v0.4.0`
+## 4. Release `v1.0.0`
 
 - After the release pull request reaches `master`, create and push the annotated
-  tag `v0.4.0` as described in `PUBLISHING.md`.
+  tag `v1.0.0` as described in `PUBLISHING.md`.
 - Confirm the GitHub release contains the VSIX files and SHA-256 checksums.
 - Keep the existing `v0.3.0` tag unchanged. Use the documented manual recovery
   only if the missing preview GitHub release is still wanted.
