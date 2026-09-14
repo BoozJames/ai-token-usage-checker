@@ -75,7 +75,7 @@ jobs:
             target: win32-x64
           - os: ubuntu-latest
             target: linux-x64
-          - os: macos-latest
+          - os: macos-15-intel
             target: darwin-x64
     runs-on: ${{ matrix.os }}
     steps:
