@@ -29,10 +29,10 @@ Work from the top. Preserve the documented provider security boundaries.
   read-only details, themes, keyboard navigation, accessibility, and disposal.
 - Verify no provider work occurs before consent.
 
-## 4. Release and manually upload `v1.0.1`
+## 4. Release and manually upload `v1.0.2`
 
 - Merge this feature through `develop` and `master` after review and green CI.
-- Tag the promoted `master` commit as `v1.0.1`; do not move existing tags.
+- Tag the promoted `master` commit as `v1.0.2`; do not move existing tags.
 - Confirm the GitHub release contains the three target-specific VSIX files and
   checksums.
 - Upload the required target package manually from publisher `jamesbooz` using

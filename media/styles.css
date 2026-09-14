@@ -4,14 +4,18 @@
   color: var(--vscode-foreground);
 }
 
-body { margin: 0; padding: 10px 12px; }
+body {
+  margin: 0;
+  padding: clamp(18px, 4vw, 48px);
+  background: var(--vscode-editor-background);
+}
 
 .gauge-card {
-  width: min(100%, 560px);
+  width: min(100%, 760px);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 14px;
 }
 
 .muted, .reset {
@@ -20,10 +24,10 @@ body { margin: 0; padding: 10px 12px; }
 }
 
 .usage-pill {
-  padding: 10px 12px;
+  padding: 18px 20px;
   border: 1px solid var(--vscode-widget-border, transparent);
   border-radius: 8px;
-  background: var(--vscode-editorWidget-background, var(--vscode-sideBar-background));
+  background: var(--vscode-editorWidget-background, var(--vscode-editor-background));
   box-shadow: 0 2px 8px var(--vscode-widget-shadow, transparent);
 }
 
@@ -38,9 +42,9 @@ body { margin: 0; padding: 10px 12px; }
 .summary strong { font-size: 1em; }
 
 .provider-name {
-  margin-bottom: 5px;
-  color: var(--vscode-descriptionForeground);
-  font-size: 0.82em;
+  margin: 0 0 10px;
+  color: var(--vscode-foreground);
+  font-size: 1.2em;
   font-weight: 600;
 }
 
@@ -83,13 +87,13 @@ body { margin: 0; padding: 10px 12px; }
 }
 
 .details {
-  padding-top: 2px;
+  padding: 14px 4px 0;
   border-top: 1px solid var(--vscode-widget-border, transparent);
 }
 
 .details h2 {
-  margin: 4px 0 3px;
-  font-size: 0.85em;
+  margin: 0 0 8px;
+  font-size: 1em;
   font-weight: 600;
   color: var(--vscode-descriptionForeground);
 }

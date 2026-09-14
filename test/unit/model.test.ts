@@ -64,7 +64,7 @@ describe("gauge selection", () => {
     });
   });
 
-  it("returns every active quota window for sidebar details", () => {
+  it("returns every active quota window for detailed usage", () => {
     assert.deepEqual(activeQuotaWindows({
       ...base,
       quotaWindows: [
