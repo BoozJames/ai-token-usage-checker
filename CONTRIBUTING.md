@@ -28,9 +28,10 @@ before changing provider behavior. User instructions belong in `README.md`;
 implementation, testing, and branch details belong here or in `PUBLISHING.md`.
 
 The extension bundles TypeScript and the Copilot SDK's JavaScript client with
-esbuild. It deliberately does not package the Copilot CLI native runtime.
-Copilot changes must continue to use the documented SDK interface and a
-separately installed official CLI.
+esbuild. The official Copilot runtime is a pinned production dependency and is
+packaged separately for each supported operating system. Copilot changes must
+continue to use the documented SDK interface, preserve consent and in-memory
+authentication, and never log raw provider responses or tokens.
 
 ## Local development
 

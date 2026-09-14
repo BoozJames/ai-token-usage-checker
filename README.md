@@ -10,8 +10,8 @@ unavailable—it is never guessed or replaced with zero.
 ## Quick start
 
 1. Install and sign in to at least one supported provider tool.
-2. Install AI Token Checker from the VS Code Marketplace or from a GitHub
-   release VSIX.
+2. Install AI Token Checker from the VS Code Marketplace or install the GitHub
+   release VSIX that matches your operating system.
 3. Click **Claude**, **Codex**, or **Copilot** in the bottom status bar.
 4. Select a provider and approve its one-time consent prompt.
 
@@ -52,27 +52,14 @@ absolute path.
 
 ### GitHub Copilot
 
-Requirements: the official GitHub Copilot CLI and an eligible Copilot account.
-The CLI is a separate prerequisite so AI Token Checker does not redistribute
-GitHub's roughly 110 MB agent runtime inside this small extension.
+Requirements: an eligible Copilot account. A separate GitHub Copilot CLI
+installation is not required.
 
-Install the CLI using one official method:
-
-```text
-# Windows
-winget install GitHub.Copilot
-
-# Any supported platform with Node.js 22+
-npm install -g @github/copilot
-```
-
-Then click the status item and select **GitHub Copilot**. VS Code requests the
-GitHub sign-in, keeps its token in memory, and passes it directly to the bundled
-official SDK client, which starts your installed `copilot` executable without a
-shell. The status menu also links to GitHub's official installation guide.
-
-If the command is not on `PATH`, set `AI Token Checker: Copilot Executable` to
-its absolute path in the extension settings.
+Click the status item and select **GitHub Copilot**. VS Code requests the GitHub
+sign-in and keeps its token in memory. The bundled official SDK client starts
+the packaged, platform-specific official Copilot runtime and requests account
+quota. Install the VSIX matching your operating system; a Windows package does
+not contain the Linux or macOS runtime.
 
 ## Privacy
 
@@ -86,7 +73,7 @@ history.
 - Usage snapshots stay in memory, except for the single allowlisted Claude
   bridge snapshot that is atomically replaced in VS Code global storage.
 - Network access is performed by the selected provider's own authenticated
-  process or official SDK runtime.
+  process or the packaged official SDK runtime.
 
 See [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), and
 [ACCURACY.md](ACCURACY.md) for the complete boundaries and metric semantics.

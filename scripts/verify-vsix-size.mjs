@@ -4,17 +4,20 @@ import { spawnSync } from "node:child_process";
 
 const path = process.argv[2];
 if (!path) throw new Error("Pass a VSIX path to verify");
+const expectedTarget = process.argv[3];
 
-const maximumBytes = 10 * 1024 * 1024;
+const maximumBytes = 150 * 1024 * 1024;
 const { size } = await stat(path);
 if (size > maximumBytes) {
-  throw new Error(`${basename(path)} is ${(size / 1024 / 1024).toFixed(2)} MB; maximum allowed is 10 MB`);
+  throw new Error(`${basename(path)} is ${(size / 1024 / 1024).toFixed(2)} MB; maximum allowed is 150 MB`);
 }
 
 const entries = listArchive(path).split(/\r?\n/).filter(Boolean);
-const forbidden = entries.filter((entry) =>
-  /(^|\/)(node_modules|src|test|tests|\.github|scripts)(\/|$)|\.map$|(^|\/)\.env|auth\.json/i.test(entry)
-);
+const allowedRuntimeDependency = /^extension\/node_modules\/(?:@github\/copilot-sdk(?:\/|-(?:win32|linux|darwin)(?:musl)?-(?:x64|arm64)\/)|@koromix\/koffi-(?:win32|linux|darwin)-(?:x64|arm64)\/|koffi\/|vscode-jsonrpc\/|zod\/)/;
+const forbidden = entries.filter((entry) => {
+  if (/(^|\/)node_modules(\/|$)/i.test(entry)) return !allowedRuntimeDependency.test(entry);
+  return /(^|\/)(src|test|tests|\.github|scripts)(\/|$)|\.map$|(^|\/)\.env|auth\.json/i.test(entry);
+});
 if (forbidden.length) {
   throw new Error(`Forbidden files found in ${basename(path)}: ${forbidden.join(", ")}`);
 }
@@ -26,16 +29,29 @@ const manifest = readArchive(path, "extension.vsixmanifest");
 if (/Microsoft\.VisualStudio\.Code\.PreRelease/i.test(manifest)) {
   throw new Error(`${basename(path)} is unexpectedly marked as a pre-release`);
 }
+if (expectedTarget && !new RegExp(`TargetPlatform="${escapeRegExp(expectedTarget)}"`, "i").test(manifest)) {
+  throw new Error(`${basename(path)} is not marked for target ${expectedTarget}`);
+}
 
 const packageJson = JSON.parse(readArchive(path, "extension/package.json"));
-if (Object.hasOwn(packageJson, "preview") || Object.hasOwn(packageJson, "dependencies")) {
-  throw new Error(`${basename(path)} contains preview or runtime-dependency metadata`);
+const dependencies = packageJson.dependencies ?? {};
+if (Object.hasOwn(packageJson, "preview") || dependencies["@github/copilot-sdk"] !== "1.0.13" || Object.keys(dependencies).length !== 1) {
+  throw new Error(`${basename(path)} has unexpected preview or runtime-dependency metadata`);
 }
 if (packageJson.contributes?.menus?.["editor/title"] || packageJson.contributes?.menus?.["view/title"]) {
   throw new Error(`${basename(path)} contains a removed title-menu contribution`);
 }
 
-console.log(`Verified ${basename(path)}: ${(size / 1024 / 1024).toFixed(2)} MB, ${entries.length} files, stable manifest, compact contents`);
+const runtimePackage = expectedTarget ? `extension/node_modules/@github/copilot-sdk-${expectedTarget}/` : undefined;
+if (runtimePackage && !entries.some((entry) => entry.startsWith(runtimePackage))) {
+  throw new Error(`${basename(path)} does not contain the packaged runtime ${runtimePackage}`);
+}
+
+console.log(`Verified ${basename(path)}: ${(size / 1024 / 1024).toFixed(2)} MB, ${entries.length} files, stable manifest, bundled ${expectedTarget ?? "Copilot"} runtime`);
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
 
 function listArchive(archivePath) {
   return runArchiveCommand(

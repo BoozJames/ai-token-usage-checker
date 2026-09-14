@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1 — Bundled Copilot runtime
+
+- Restored the official platform-specific Copilot runtime inside the VSIX, so
+  GitHub Copilot usage no longer requires a separately installed CLI.
+- Removed the external Copilot executable setting and installation prompt.
+- Changed local packaging to emit a target-specific VSIX for the current
+  supported operating system.
+- Removed automatic Marketplace publishing; releases are uploaded manually.
+
 ## 1.0.0 — First stable release
 
 - Made the bottom status item and its Quick Pick the primary control surface.
