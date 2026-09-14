@@ -29,10 +29,10 @@ Work from the top. Preserve the documented provider security boundaries.
   read-only details, themes, keyboard navigation, accessibility, and disposal.
 - Verify no provider work occurs before consent.
 
-## 4. Release and manually upload `v1.0.3`
+## 4. Manually upload `v1.0.3`
 
-- Keep the existing `v1.0.2` tag and release immutable. Promote the universal
-  package through `develop` and `master`, then create a new `v1.0.3` tag.
+- The universal package is merged, tagged, and published in the GitHub v1.0.3
+  release. Keep the v1.0.3 tag immutable.
 - Upload `ai-token-checker-universal-x64.vsix` manually from publisher `jamesbooz` using
   **More Actions → Update**.
 

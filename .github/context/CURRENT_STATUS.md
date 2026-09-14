@@ -4,13 +4,12 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Repository and release state
 
-- Package: `ai-token-checker` version `1.0.2` is the current stable release.
-- Version `1.0.3` is in development on `feature/universal-x64-vsix`.
+- Package: `ai-token-checker` version `1.0.3` is the current stable release.
 - Marketplace publisher: `jamesbooz`; extension ID:
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Release commit: `f7c8034` on `master`; GitHub release and immutable tag
-  `v1.0.2` were published on 2026-09-14.
+- Release commit: `0390428` on `master`; GitHub release and immutable tag
+  `v1.0.3` were published on 2026-09-14.
 - Version `1.0.1` restored the packaged official Copilot runtime because the
   external-CLI prerequisite introduced in `1.0.0` broke the prior no-setup
   Copilot experience.
@@ -28,9 +27,9 @@ Last verified: 2026-09-14 (Asia/Manila)
   rejects duplicate `node_modules`, and rejects source, tests, workflows,
   scripts, source maps, environment files, and credential files.
 - `npm run package`, `npm run test:integration`, and `npm audit --audit-level=high`
-  pass locally for the v1.0.3 candidate. The package command includes
+  passed locally for v1.0.3. The package command includes
   lint, type checking, 23 unit tests, secret scanning, and a production build.
-- The initial `ai-token-checker-universal-x64.vsix` proof is 133.15 MB with 211
+- `ai-token-checker-universal-x64.vsix` is 133.15 MB with 211
   files. Archive validation confirms stable untargeted metadata and all three
   pinned x64 runtime roots.
 - The universal VSIX installs successfully in an isolated VS Code profile on
@@ -39,9 +38,9 @@ Last verified: 2026-09-14 (Asia/Manila)
 - Local validation used Node.js 20.10.0 and emitted engine warnings because the
   supported minimum is Node.js 20.19.0. Release CI supplied the required
   supported-Node validation.
-- Release workflow run `34815214120` passed tag verification, all three x64
-  builds, package inspection, checksums, and GitHub release creation. The
-  matching `master` CI run also passed.
+- Release workflow run `34820223790` passed tag verification, universal x64
+  packaging, archive inspection, checksum generation, and GitHub release
+  creation. The preceding feature and release pull-request CI runs also passed.
 
 ## User interface
 
@@ -96,13 +95,13 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Marketplace readiness
 
-- The development manifest has stable `1.0.3` metadata, the confirmed publisher, MIT
+- The manifest has stable `1.0.3` metadata, the confirmed publisher, MIT
   license, public repository/support links, free pricing, and a neutral icon.
-- The v1.0.3 candidate is one x64 VSIX for Windows, Linux, and macOS. It has no
+- The v1.0.3 release is one x64 VSIX for Windows, Linux, and macOS. It has no
   target marker so the Marketplace can use it as a cross-platform fallback.
 - Marketplace publication is manual from the existing publisher page using
   **More Actions → Update**.
-- GitHub release `v1.0.2` contains Windows, Linux, and macOS x64 VSIX files and
-  matching SHA-256 checksums.
-- Do not move or recreate `v1.0.2`. Marketplace upload remains manual from the
+- Release workflow run `34820223790` passed and published the universal VSIX
+  plus its SHA-256 checksum.
+- Do not move or recreate `v1.0.3`. Marketplace upload remains manual from the
   existing publisher page.
