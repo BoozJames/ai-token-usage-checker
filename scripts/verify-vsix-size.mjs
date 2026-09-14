@@ -41,6 +41,9 @@ if (Object.hasOwn(packageJson, "preview") || dependencies["@github/copilot-sdk"]
 if (packageJson.contributes?.menus?.["editor/title"] || packageJson.contributes?.menus?.["view/title"]) {
   throw new Error(`${basename(path)} contains a removed title-menu contribution`);
 }
+if (packageJson.contributes?.views || packageJson.contributes?.viewsContainers || packageJson.activationEvents?.includes("onView:aiTokenChecker.gauge")) {
+  throw new Error(`${basename(path)} contains the removed Activity Bar or sidebar contribution`);
+}
 
 const runtimePackage = expectedTarget ? `extension/node_modules/@github/copilot-sdk-${expectedTarget}/` : undefined;
 if (runtimePackage && !entries.some((entry) => entry.startsWith(runtimePackage))) {

@@ -2,7 +2,7 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "jamesbooz",
   "license": "MIT",
   "pricing": "Free",
@@ -37,7 +37,7 @@
   "main": "./dist/extension.js",
   "activationEvents": [
     "onStartupFinished",
-    "onView:aiTokenChecker.gauge",
+    "onCommand:aiTokenChecker.showGauge",
     "onCommand:aiTokenChecker.refresh",
     "onCommand:aiTokenChecker.connect",
     "onCommand:aiTokenChecker.disconnect",
@@ -55,7 +55,7 @@
       },
       {
         "command": "aiTokenChecker.showGauge",
-        "title": "Show Usage Gauge",
+        "title": "Show Usage Details",
         "category": "AI Token Checker",
         "icon": "$(dashboard)"
       },
@@ -86,26 +86,6 @@
         "category": "AI Token Checker"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "aiTokenChecker",
-          "title": "AI Token Checker",
-          "icon": "media/gauge.svg"
-        }
-      ]
-    },
-    "views": {
-      "aiTokenChecker": [
-        {
-          "type": "webview",
-          "id": "aiTokenChecker.gauge",
-          "name": "Usage Gauge",
-          "icon": "media/gauge.svg",
-          "contextualTitle": "AI Token Checker"
-        }
-      ]
-    },
     "configuration": {
       "title": "AI Token Checker",
       "properties": {

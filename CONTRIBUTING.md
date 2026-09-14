@@ -48,3 +48,7 @@ npm run package
 Press `F5` in VS Code to launch the Extension Development Host. Never use real
 credentials, prompts, transcripts, account identifiers, or raw provider
 responses in tests, fixtures, logs, issues, or documentation.
+
+Regenerate the Marketplace walkthrough with
+`python scripts/generate-demo-gif.py` after installing Pillow. Keep its labels
+short and aligned with the actual status-bar, picker, and details-panel UI.

@@ -18,4 +18,4 @@ The extension does not read assistant transcripts, prompts, completions, source 
 
 AI Token Checker does not create an output channel or log raw provider responses.
 
-When the status-bar indicator is enabled, a previously consented selected provider may refresh in the background at the configured interval. Disabling the status bar and hiding the detailed view stops watchers, refresh timers, and provider processes. Disconnect also revokes the extension's saved consent for that provider.
+When the status-bar indicator is enabled, a previously consented selected provider may refresh in the background at the configured interval. Disabling the status bar and closing the usage-details editor tab stops watchers, refresh timers, and provider processes. Disconnect also revokes the extension's saved consent for that provider.

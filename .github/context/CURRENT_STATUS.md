@@ -4,14 +4,14 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Repository and release state
 
-- Package: `ai-token-checker` version `1.0.1` is in development.
+- Package: `ai-token-checker` version `1.0.2` is in development.
 - Marketplace publisher: `jamesbooz`; extension ID:
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `feature/bundled-copilot-runtime`, created from
+- Active work branch: `feature/status-hover-details`, created from
   `origin/develop`.
-- GitHub release `v1.0.0` and its immutable tag remain unchanged.
-- Version `1.0.1` restores the packaged official Copilot runtime because the
+- GitHub releases and immutable tags through `v1.0.1` remain unchanged.
+- Version `1.0.1` restored the packaged official Copilot runtime because the
   external-CLI prerequisite introduced in `1.0.0` broke the prior no-setup
   Copilot experience.
 - The release workflow builds GitHub release assets only. Automatic Marketplace
@@ -33,8 +33,8 @@ Last verified: 2026-09-14 (Asia/Manila)
   credential files.
 - `npm ci`, `npm run package`, `npm run test:integration`, and
   `npm audit --audit-level=high` pass locally. The package command includes
-  lint, type checking, 20 unit tests, secret scanning, and a production build.
-- `ai-token-checker-win32-x64.vsix` is 44.00 MB with 783 files. Archive
+  lint, type checking, 22 unit tests, secret scanning, and a production build.
+- `ai-token-checker-win32-x64.vsix` is 44.06 MB with 783 files. Archive
   validation confirms stable metadata, the `win32-x64` target, and the matching
   packaged runtime.
 - Local validation used Node.js 20.10.0 and emitted engine warnings because the
@@ -43,11 +43,17 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## User interface
 
-- The bottom status-bar item remains the primary control and opens the
-  provider/action Quick Pick.
+- The bottom status-bar item remains the primary control. Its hover shows quota
+  windows, reset times, token details, source, and freshness.
+- The provider/action Quick Pick places the current provider first with its
+  connection state and usage summary, then lists the other providers.
+- Full usage details open in a single reusable editor tab on demand. The
+  Activity Bar icon and permanent sidebar contribution have been removed.
+- The Marketplace README includes a short generated GIF showing hover, provider
+  selection, and the on-demand details tab without real account data.
 - The Copilot CLI installation action and external executable setting have been
   removed because the runtime is packaged with the extension.
-- The sidebar remains a read-only details view with one responsive progress bar,
+- The on-demand details tab remains read-only, with one responsive progress bar,
   quota windows, secondary token information, source, freshness, and errors.
 
 ## Privacy and security
@@ -88,10 +94,10 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Marketplace readiness
 
-- The manifest has stable `1.0.1` metadata, the confirmed publisher, MIT
+- The manifest has stable `1.0.2` metadata, the confirmed publisher, MIT
   license, public repository/support links, free pricing, and a neutral icon.
 - Each VSIX is platform-specific because it contains a native Copilot runtime.
 - Marketplace publication is manual from the existing publisher page using
   **More Actions → Update**.
-- Do not move or recreate existing tags. Create `v1.0.1` only after the change is
+- Do not move or recreate existing tags. Create `v1.0.2` only after the change is
   reviewed, promoted to `master`, and validated.

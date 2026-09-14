@@ -7,6 +7,8 @@ refresh, or open the full usage breakdown.
 It displays only supported provider-reported values. Missing usage is shown as
 unavailable—it is never guessed or replaced with zero.
 
+![Hover for usage, choose a provider, and open full details](media/usage-workflow.gif)
+
 ## Quick start
 
 1. Install and sign in to at least one supported provider tool.
@@ -15,11 +17,12 @@ unavailable—it is never guessed or replaced with zero.
 3. Click **Claude**, **Codex**, or **Copilot** in the bottom status bar.
 4. Select a provider and approve its one-time consent prompt.
 
-The status bar shows the selected provider and remaining percentage. Its menu
-contains connection, refresh, setup, settings, privacy, and detailed-usage
-actions. The Activity Bar view is deliberately read-only: it shows the progress
-bar, every reported quota window, reset times, token details, freshness, and
-data source without repeating setup controls.
+The status bar shows the selected provider and remaining percentage. Hover it
+for quota windows, reset times, token details, freshness, and data source. Click
+it to open a menu with the current provider first, followed by other providers
+and connection, refresh, setup, settings, privacy, and detailed-usage actions.
+**Open usage details** opens the full progress gauge in an editor tab only when
+needed; the extension does not add an Activity Bar icon or permanent sidebar.
 
 ## Provider setup
 

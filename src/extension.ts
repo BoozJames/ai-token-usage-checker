@@ -9,7 +9,8 @@ import { CodexAdapter } from "./providers/codex";
 import { CopilotAdapter } from "./providers/copilot";
 import { sanitizeError } from "./sanitize";
 import { UsageStatusBar } from "./statusBar";
-import { GaugeViewProvider } from "./webview";
+import { orderedProviderIds, pickerUsageDetail } from "./uiPresentation";
+import { UsageDetailsPanel } from "./webview";
 
 export function activate(context: vscode.ExtensionContext): void {
   const adapters = new Map<ProviderId, ProviderAdapter>();
@@ -24,20 +25,16 @@ export function activate(context: vscode.ExtensionContext): void {
     return session.accessToken;
   }));
   const controller = new ProviderController(context, adapters);
-  const viewProvider = new GaugeViewProvider(context, controller);
+  const detailsPanel = new UsageDetailsPanel(context, controller);
   const statusBar = new UsageStatusBar(controller);
 
   context.subscriptions.push(
-    controller, viewProvider, statusBar,
-    vscode.window.registerWebviewViewProvider("aiTokenChecker.gauge", viewProvider, { webviewOptions: { retainContextWhenHidden: false } }),
+    controller, detailsPanel, statusBar,
     vscode.commands.registerCommand("aiTokenChecker.refresh", () => controller.refresh()),
     vscode.commands.registerCommand("aiTokenChecker.connect", () => controller.connect()),
     vscode.commands.registerCommand("aiTokenChecker.disconnect", () => controller.disconnect()),
     vscode.commands.registerCommand("aiTokenChecker.pickProvider", () => showProviderPicker(controller)),
-    vscode.commands.registerCommand("aiTokenChecker.showGauge", async () => {
-      await vscode.commands.executeCommand("workbench.view.extension.aiTokenChecker");
-      await vscode.commands.executeCommand("aiTokenChecker.gauge.focus");
-    }),
+    vscode.commands.registerCommand("aiTokenChecker.showGauge", () => detailsPanel.show()),
     vscode.commands.registerCommand("aiTokenChecker.setupClaude", async () => {
       try { if (await setupClaudeBridge(context)) await controller.connect(); }
       catch (error) { void vscode.window.showErrorMessage(`Claude bridge setup failed: ${sanitizeError(error)}`); }
@@ -59,26 +56,15 @@ type ProviderPickerItem = vscode.QuickPickItem & {
 async function showProviderPicker(controller: ProviderController): Promise<void> {
   const selected = controller.state.selectedProvider;
   const connected = controller.state.connected;
+  const orderedProviders = orderedProviderIds(selected);
+  const selectedItem = providerPickerItem(orderedProviders[0], selected, connected, controller);
+  const otherItems = orderedProviders.slice(1)
+    .map((provider) => providerPickerItem(provider, selected, connected, controller));
   const items: ProviderPickerItem[] = [
-    {
-      label: "Claude Code",
-      iconPath: providerIcon("Anthropic.claude-code", new vscode.ThemeIcon("sparkle")),
-      description: selected === "claude" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
-      provider: "claude"
-    },
-    {
-      label: "Codex",
-      iconPath: providerIcon("openai.chatgpt", new vscode.ThemeIcon("code")),
-      description: selected === "codex" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
-      provider: "codex"
-    },
-    {
-      label: "GitHub Copilot",
-      iconPath: providerIcon("GitHub.copilot-chat", new vscode.ThemeIcon("github")),
-      description: selected === "copilot" ? `Selected · ${connected ? "Connected" : "Disconnected"}` : "",
-      provider: "copilot"
-    },
-    { label: "Selected provider", kind: vscode.QuickPickItemKind.Separator },
+    selectedItem,
+    { label: "Other providers", kind: vscode.QuickPickItemKind.Separator },
+    ...otherItems,
+    { label: `${providerDisplayName(selected)} actions`, kind: vscode.QuickPickItemKind.Separator },
     connected
       ? { label: "$(debug-disconnect) Disconnect", description: "Stop refreshes and revoke consent", action: "disconnect" }
       : { label: "$(plug) Connect", description: "Review consent and connect", action: "connect" },
@@ -93,7 +79,7 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
     { label: "$(shield) Privacy and data handling", action: "privacy" }
   ];
   const choice = await vscode.window.showQuickPick(items, {
-    title: "AI Token Checker",
+    title: `AI Token Checker - ${providerDisplayName(selected)}`,
     placeHolder: "Choose a provider or action",
     matchOnDescription: true
   });
@@ -113,6 +99,31 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
     case "settings": await vscode.commands.executeCommand("workbench.action.openSettings", "@ext:jamesbooz.ai-token-checker"); break;
     case "privacy": await vscode.env.openExternal(vscode.Uri.parse("https://github.com/BoozJames/ai-token-usage-checker/blob/master/PRIVACY.md")); break;
   }
+}
+
+function providerPickerItem(
+  provider: ProviderId,
+  selected: ProviderId,
+  connected: boolean,
+  controller: ProviderController
+): ProviderPickerItem {
+  const isSelected = provider === selected;
+  const icon = provider === "claude"
+    ? providerIcon("Anthropic.claude-code", new vscode.ThemeIcon("sparkle"))
+    : provider === "codex"
+      ? providerIcon("openai.chatgpt", new vscode.ThemeIcon("code"))
+      : providerIcon("GitHub.copilot-chat", new vscode.ThemeIcon("github"));
+  return {
+    label: providerDisplayName(provider),
+    iconPath: icon,
+    description: isSelected ? `Current | ${connected ? "Connected" : "Disconnected"}` : "",
+    ...(isSelected ? { detail: pickerUsageDetail(controller.state.snapshot) } : {}),
+    provider
+  };
+}
+
+function providerDisplayName(provider: ProviderId): string {
+  return provider === "claude" ? "Claude Code" : provider === "codex" ? "Codex" : "GitHub Copilot";
 }
 
 function providerIcon(extensionId: string, fallback: vscode.ThemeIcon): vscode.Uri | vscode.ThemeIcon {

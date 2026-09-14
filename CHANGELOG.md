@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.2 — On-demand usage details
+
+- Removed the Activity Bar icon and permanent usage sidebar.
+- Added a rich status-bar hover with quota, reset, token, freshness, and source
+  details.
+- Moved the full usage gauge to an on-demand editor tab.
+- Put the currently selected AI provider first in the provider/action picker.
+- Added a short Marketplace walkthrough showing the new three-step flow.
+
 ## 1.0.1 — Bundled Copilot runtime
 
 - Restored the official platform-specific Copilot runtime inside the VSIX, so

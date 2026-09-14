@@ -8,11 +8,20 @@ export async function run(): Promise<void> {
   const manifest = extension.packageJSON as {
     version?: unknown;
     dependencies?: Record<string, unknown>;
-    contributes?: { menus?: Record<string, unknown>; configuration?: { properties?: Record<string, unknown> } };
+    activationEvents?: unknown[];
+    contributes?: {
+      menus?: Record<string, unknown>;
+      views?: Record<string, unknown>;
+      viewsContainers?: Record<string, unknown>;
+      configuration?: { properties?: Record<string, unknown> };
+    };
   };
-  assert.equal(manifest.version, "1.0.1");
+  assert.equal(manifest.version, "1.0.2");
   assert.equal(manifest.contributes?.menus?.["editor/title"], undefined, "editor-title action should be removed");
   assert.equal(manifest.contributes?.menus?.["view/title"], undefined, "sidebar title actions should be removed");
+  assert.equal(manifest.contributes?.views, undefined, "sidebar views should be removed");
+  assert.equal(manifest.contributes?.viewsContainers, undefined, "Activity Bar container should be removed");
+  assert.ok(!manifest.activationEvents?.includes("onView:aiTokenChecker.gauge"), "removed sidebar should not activate the extension");
   assert.equal(manifest.contributes?.configuration?.properties?.["aiTokenChecker.copilot.executable"], undefined);
   assert.equal(manifest.dependencies?.["@github/copilot-sdk"], "1.0.13");
   await extension.activate();
@@ -22,5 +31,6 @@ export async function run(): Promise<void> {
   assert.ok(commands.includes("aiTokenChecker.showGauge"));
   assert.ok(commands.includes("aiTokenChecker.pickProvider"));
   assert.ok(commands.includes("aiTokenChecker.setupClaude"));
+  await assert.doesNotReject(async () => vscode.commands.executeCommand("aiTokenChecker.showGauge"));
   console.log(`Integration smoke test passed from ${resolve(__dirname, "../../..")} .`);
 }
