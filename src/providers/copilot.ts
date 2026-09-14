@@ -1,4 +1,6 @@
 import type { ConnectionResult, ProviderAdapter, ProviderAvailability, ProviderSnapshot, QuotaWindow } from "../model";
+import { chmodSync, existsSync } from "node:fs";
+import { join } from "node:path";
 
 interface CopilotClientHandle {
   start(): Promise<void>;
@@ -21,27 +23,43 @@ export class CopilotAdapter implements ProviderAdapter {
   readonly id = "copilot" as const;
   private client: CopilotClientHandle | undefined;
 
-  constructor(private readonly getGitHubToken: () => Promise<string>) {}
+  constructor(
+    private readonly getGitHubToken: () => Promise<string>,
+    private readonly extensionPath: string
+  ) {}
 
   async detect(): Promise<ProviderAvailability> {
-    return { available: true };
+    try {
+      return resolveCopilotRuntimePath(this.extensionPath)
+        ? { available: true }
+        : { available: false, reason: "Reinstall the universal VSIX to restore the bundled Copilot runtime." };
+    } catch (error) {
+      return { available: false, reason: error instanceof Error ? error.message : "This platform is unsupported." };
+    }
   }
 
   async connect(): Promise<ConnectionResult> {
     if (this.client) return { connected: true };
-    const { CopilotClient } = await import("@github/copilot-sdk");
+    const { CopilotClient, RuntimeConnection } = await import("@github/copilot-sdk");
+    const runtimePath = resolveCopilotRuntimePath(this.extensionPath);
+    if (!runtimePath) {
+      return { connected: false, message: "The bundled GitHub Copilot runtime is missing. Reinstall the universal VSIX." };
+    }
     let gitHubToken: string;
     try {
       gitHubToken = await this.getGitHubToken();
     } catch {
       return { connected: false, message: "GitHub sign-in was cancelled or unavailable." };
     }
+    prepareRuntimeExecutables(runtimePath);
+
     const client: CopilotClientHandle = new CopilotClient({
       gitHubToken,
       useLoggedInUser: false,
       logLevel: "none",
       enableRemoteSessions: false,
-      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "1.0.2" }
+      connection: RuntimeConnection.forStdio({ path: runtimePath }),
+      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "1.0.3" }
     });
     try {
       await client.start();
@@ -98,8 +116,56 @@ export class CopilotAdapter implements ProviderAdapter {
 function copilotConnectionMessage(error: unknown): string {
   const message = error instanceof Error ? error.message : "Could not connect to GitHub Copilot.";
   return /ENOENT|not found|cannot find|could not resolve|missing required/i.test(message)
-    ? "The packaged GitHub Copilot runtime could not be started. Reinstall the VSIX for your operating system."
+    ? "The packaged GitHub Copilot runtime could not be started. Reinstall the universal VSIX."
     : message;
+}
+
+export function bundledCopilotRuntimePath(
+  extensionPath: string,
+  platform: NodeJS.Platform = process.platform,
+  arch: string = process.arch
+): string {
+  if (arch !== "x64" || (platform !== "win32" && platform !== "linux" && platform !== "darwin")) {
+    throw new Error(`The bundled GitHub Copilot runtime does not support ${platform}-${arch}.`);
+  }
+  const target = `${platform}-x64`;
+  const executable = platform === "win32" ? "copilot-runtime.exe" : "copilot-runtime";
+  return join(extensionPath, "resources", "copilot-runtimes", target, "prebuilds", target, executable);
+}
+
+function resolveCopilotRuntimePath(extensionPath: string): string | undefined {
+  const bundledPath = bundledCopilotRuntimePath(extensionPath);
+  if (existsSync(bundledPath)) return bundledPath;
+
+  const target = `${process.platform}-x64`;
+  const developmentPath = join(
+    extensionPath,
+    "node_modules",
+    "@github",
+    `copilot-sdk-${target}`,
+    "prebuilds",
+    target,
+    process.platform === "win32" ? "copilot-runtime.exe" : "copilot-runtime"
+  );
+  return existsSync(developmentPath) ? developmentPath : undefined;
+}
+
+function prepareRuntimeExecutables(runtimePath: string): void {
+  if (process.platform === "win32") return;
+  const target = `${process.platform}-x64`;
+  const packageRoot = join(runtimePath, "..", "..", "..");
+  const executablePaths = [
+    runtimePath,
+    join(packageRoot, "ripgrep", "bin", target, "rg"),
+    join(packageRoot, "tgrep", "bin", target, "tgrep"),
+    ...(process.platform === "darwin" ? [
+      join(packageRoot, "plugins", "computer-use", "computer-use-mcp"),
+      join(packageRoot, "plugins", "computer-use", "Copilot Computer Use.app", "Contents", "MacOS", "Copilot Computer Use")
+    ] : [])
+  ];
+  for (const executablePath of executablePaths) {
+    if (existsSync(executablePath)) chmodSync(executablePath, 0o755);
+  }
 }
 
 interface CopilotQuota {

@@ -5,6 +5,7 @@ Last verified: 2026-09-14 (Asia/Manila)
 ## Repository and release state
 
 - Package: `ai-token-checker` version `1.0.2` is the current stable release.
+- Version `1.0.3` is in development on `feature/universal-x64-vsix`.
 - Marketplace publisher: `jamesbooz`; extension ID:
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
@@ -19,23 +20,22 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Validation
 
-- The package intentionally includes the pinned `@github/copilot-sdk` production
-  dependency and its matching native x64 runtime.
-- Local `npm run package` detects Windows, Linux, or macOS x64 and emits a
-  target-specific VSIX rather than a misleading universal package.
-- CI and release packaging pin the macOS x64 job to GitHub's
-  `macos-15-intel` runner. `macos-latest` is arm64 and installs an arm64 native
-  dependency that cannot satisfy a `darwin-x64` package.
-- Package validation enforces a 150 MB limit, requires the matching runtime,
-  permits only the SDK's expected production dependency tree, and rejects
-  source, tests, workflows, scripts, source maps, environment files, and
-  credential files.
-- `npm ci`, `npm run package`, `npm run test:integration`, and
-  `npm audit --audit-level=high` pass locally. The package command includes
-  lint, type checking, 22 unit tests, secret scanning, and a production build.
-- `ai-token-checker-win32-x64.vsix` is 44.06 MB with 783 files. Archive
-  validation confirms stable metadata, the `win32-x64` target, and the matching
-  packaged runtime.
+- The package intentionally includes the pinned `@github/copilot-sdk` client
+  and downloads its three official x64 runtime artifacts during packaging.
+- Local `npm run package` emits one untargeted universal x64 VSIX containing the
+  Windows, Linux, and macOS runtimes for the Marketplace's manual upload field.
+- Package validation enforces a 150 MB limit, requires all three runtime roots,
+  rejects duplicate `node_modules`, and rejects source, tests, workflows,
+  scripts, source maps, environment files, and credential files.
+- `npm run package`, `npm run test:integration`, and `npm audit --audit-level=high`
+  pass locally for the v1.0.3 candidate. The package command includes
+  lint, type checking, 23 unit tests, secret scanning, and a production build.
+- The initial `ai-token-checker-universal-x64.vsix` proof is 133.15 MB with 211
+  files. Archive validation confirms stable untargeted metadata and all three
+  pinned x64 runtime roots.
+- The universal VSIX installs successfully in an isolated VS Code profile on
+  Windows. All three runtime roots survive installation, and the packaged
+  Windows runtime executable loads without a separate Copilot CLI.
 - Local validation used Node.js 20.10.0 and emitted engine warnings because the
   supported minimum is Node.js 20.19.0. Release CI supplied the required
   supported-Node validation.
@@ -80,7 +80,7 @@ Last verified: 2026-09-14 (Asia/Manila)
 ### GitHub Copilot
 
 - Uses VS Code Authentication, the pinned official GitHub Copilot SDK client,
-  and the packaged platform-specific official Copilot runtime.
+  and selects the current operating system's runtime from the universal x64 VSIX.
 - Reads `account.getQuota`; it does not call undocumented Copilot endpoints.
 - A real Copilot account still needs end-to-end validation with the restored
   packaged runtime.
@@ -96,9 +96,10 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Marketplace readiness
 
-- The manifest has stable `1.0.2` metadata, the confirmed publisher, MIT
+- The development manifest has stable `1.0.3` metadata, the confirmed publisher, MIT
   license, public repository/support links, free pricing, and a neutral icon.
-- Each VSIX is platform-specific because it contains a native Copilot runtime.
+- The v1.0.3 candidate is one x64 VSIX for Windows, Linux, and macOS. It has no
+  target marker so the Marketplace can use it as a cross-platform fallback.
 - Marketplace publication is manual from the existing publisher page using
   **More Actions → Update**.
 - GitHub release `v1.0.2` contains Windows, Linux, and macOS x64 VSIX files and

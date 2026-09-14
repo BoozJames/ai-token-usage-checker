@@ -71,6 +71,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - os: ubuntu-latest
+            target: universal-x64
           - os: windows-latest
             target: win32-x64
           - os: ubuntu-latest
@@ -89,12 +91,29 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
-      - run: npx vsce package ${{ startsWith(env.RELEASE_TAG, 'v0.3.') && '--pre-release' || '' }} --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
-      - name: Verify bundled runtime package
-        if: ${{ !startsWith(env.RELEASE_TAG, 'v0.3.') }}
+      - name: Detect universal packaging support
+        id: package_mode
+        shell: bash
+        run: |
+          if [[ -f scripts/package-universal.mjs ]]; then
+            echo "universal=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "universal=false" >> "${GITHUB_OUTPUT}"
+          fi
+      - name: Build universal x64 package
+        if: steps.package_mode.outputs.universal == 'true' && matrix.target == 'universal-x64'
+        run: node scripts/package-universal.mjs
+      - name: Build legacy platform package
+        if: steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64'
+        run: npx vsce package ${{ startsWith(env.RELEASE_TAG, 'v0.3.') && '--pre-release' || '' }} --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
+      - name: Verify legacy bundled runtime package
+        if: steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64' && !startsWith(env.RELEASE_TAG, 'v0.3.')
         run: node scripts/verify-vsix-size.mjs ai-token-checker-${{ matrix.target }}.vsix ${{ matrix.target }}
-      - run: node scripts/checksum.mjs ai-token-checker-${{ matrix.target }}.vsix
+      - name: Create checksum
+        if: (steps.package_mode.outputs.universal == 'true' && matrix.target == 'universal-x64') || (steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64')
+        run: node scripts/checksum.mjs ai-token-checker-${{ matrix.target }}.vsix
       - uses: actions/upload-artifact@v4
+        if: (steps.package_mode.outputs.universal == 'true' && matrix.target == 'universal-x64') || (steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64')
         with:
           name: release-${{ matrix.target }}
           path: |

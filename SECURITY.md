@@ -12,7 +12,7 @@ Report vulnerabilities privately to the repository owner through GitHub's privat
 - Provider payloads are parsed defensively and only known fields are normalized.
 - The on-demand usage-details webview uses a deny-by-default Content Security Policy, extension-local resources, and no webview-to-host commands.
 - No credential files, transcripts, raw provider payloads, or source files are logged.
-- The bundled Copilot SDK client and its platform-specific official runtime are pinned exactly, packaged from production dependencies, and audited in CI.
+- The bundled Copilot SDK client and the three official x64 runtime artifacts are pinned exactly, packaged from the npm registry in a disposable staging directory, and audited in CI.
 
 ## Supported versions
 
