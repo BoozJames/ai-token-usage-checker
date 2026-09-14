@@ -4,13 +4,12 @@ Last verified: 2026-09-14 (Asia/Manila)
 
 ## Repository and release state
 
-- Package: `ai-token-checker` version `1.0.2` is in development.
+- Package: `ai-token-checker` version `1.0.2` is the current stable release.
 - Marketplace publisher: `jamesbooz`; extension ID:
   `jamesbooz.ai-token-checker`.
 - Repository default branch: `master`.
-- Active work branch: `feature/status-hover-details`, created from
-  `origin/develop`.
-- GitHub releases and immutable tags through `v1.0.1` remain unchanged.
+- Release commit: `f7c8034` on `master`; GitHub release and immutable tag
+  `v1.0.2` were published on 2026-09-14.
 - Version `1.0.1` restored the packaged official Copilot runtime because the
   external-CLI prerequisite introduced in `1.0.0` broke the prior no-setup
   Copilot experience.
@@ -38,8 +37,11 @@ Last verified: 2026-09-14 (Asia/Manila)
   validation confirms stable metadata, the `win32-x64` target, and the matching
   packaged runtime.
 - Local validation used Node.js 20.10.0 and emitted engine warnings because the
-  supported minimum is Node.js 20.19.0. CI remains the required supported-Node
-  validation.
+  supported minimum is Node.js 20.19.0. Release CI supplied the required
+  supported-Node validation.
+- Release workflow run `34815214120` passed tag verification, all three x64
+  builds, package inspection, checksums, and GitHub release creation. The
+  matching `master` CI run also passed.
 
 ## User interface
 
@@ -99,5 +101,7 @@ Last verified: 2026-09-14 (Asia/Manila)
 - Each VSIX is platform-specific because it contains a native Copilot runtime.
 - Marketplace publication is manual from the existing publisher page using
   **More Actions → Update**.
-- Do not move or recreate existing tags. Create `v1.0.2` only after the change is
-  reviewed, promoted to `master`, and validated.
+- GitHub release `v1.0.2` contains Windows, Linux, and macOS x64 VSIX files and
+  matching SHA-256 checksums.
+- Do not move or recreate `v1.0.2`. Marketplace upload remains manual from the
+  existing publisher page.
