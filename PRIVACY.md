@@ -14,7 +14,7 @@ The extension does not read assistant transcripts, prompts, completions, source 
 
 - Claude: local snapshot only; the bridge itself performs no network requests.
 - Codex: after consent, a local `codex app-server` process may contact OpenAI using Codex-owned authentication.
-- Copilot: after consent and a VS Code GitHub sign-in, the bundled official SDK client starts the packaged platform-specific official Copilot runtime directly from the extension installation. That runtime may contact GitHub using the in-memory session token.
+- Copilot: after consent and a VS Code GitHub sign-in, the bundled official SDK client starts only the current operating system's packaged official Copilot runtime from the universal x64 extension installation. That runtime may contact GitHub using the in-memory session token.
 
 AI Token Checker does not create an output channel or log raw provider responses.
 

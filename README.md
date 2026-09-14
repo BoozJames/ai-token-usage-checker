@@ -12,8 +12,8 @@ unavailable—it is never guessed or replaced with zero.
 ## Quick start
 
 1. Install and sign in to at least one supported provider tool.
-2. Install AI Token Checker from the VS Code Marketplace or install the GitHub
-   release VSIX that matches your operating system.
+2. Install AI Token Checker from the VS Code Marketplace or install the
+   universal x64 VSIX from the GitHub release.
 3. Click **Claude**, **Codex**, or **Copilot** in the bottom status bar.
 4. Select a provider and approve its one-time consent prompt.
 
@@ -60,9 +60,9 @@ installation is not required.
 
 Click the status item and select **GitHub Copilot**. VS Code requests the GitHub
 sign-in and keeps its token in memory. The bundled official SDK client starts
-the packaged, platform-specific official Copilot runtime and requests account
-quota. Install the VSIX matching your operating system; a Windows package does
-not contain the Linux or macOS runtime.
+the packaged official Copilot runtime for the current operating system and
+requests account quota. The universal x64 VSIX includes the Windows, Linux, and
+macOS runtimes in one manually uploadable package.
 
 ## Privacy
 
@@ -84,7 +84,7 @@ See [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), and
 ## Supported environment
 
 - Local desktop VS Code 1.95 or newer.
-- Windows, macOS, and Linux.
+- Windows, macOS, and Linux on x64 processors.
 - WSL, Remote SSH, Dev Containers, and VS Code for the Web are not supported in
   this first stable release.
 - Provider plans and APIs differ; some accounts may not expose every quota

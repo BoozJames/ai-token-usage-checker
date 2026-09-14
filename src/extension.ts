@@ -23,7 +23,7 @@ export function activate(context: vscode.ExtensionContext): void {
   adapters.set("copilot", new CopilotAdapter(async () => {
     const session = await vscode.authentication.getSession("github", ["read:user"], { createIfNone: true });
     return session.accessToken;
-  }));
+  }, context.extensionPath));
   const controller = new ProviderController(context, adapters);
   const detailsPanel = new UsageDetailsPanel(context, controller);
   const statusBar = new UsageStatusBar(controller);

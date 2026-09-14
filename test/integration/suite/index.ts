@@ -16,7 +16,7 @@ export async function run(): Promise<void> {
       configuration?: { properties?: Record<string, unknown> };
     };
   };
-  assert.equal(manifest.version, "1.0.2");
+  assert.equal(manifest.version, "1.0.3");
   assert.equal(manifest.contributes?.menus?.["editor/title"], undefined, "editor-title action should be removed");
   assert.equal(manifest.contributes?.menus?.["view/title"], undefined, "sidebar title actions should be removed");
   assert.equal(manifest.contributes?.views, undefined, "sidebar views should be removed");

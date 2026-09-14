@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.3 — Universal x64 package
+
+- Added one manually uploadable VSIX containing the official Windows, Linux,
+  and macOS x64 Copilot runtimes.
+- Selects only the current operating system's bundled runtime when Copilot is
+  connected.
+- Keeps Marketplace publishing manual with no PAT, OIDC, or Azure dependency.
+
 ## 1.0.2 — On-demand usage details
 
 - Removed the Activity Bar icon and permanent usage sidebar.

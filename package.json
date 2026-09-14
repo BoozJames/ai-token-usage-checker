@@ -2,7 +2,7 @@
   "name": "ai-token-checker",
   "displayName": "AI Token Checker",
   "description": "A privacy-first quota and token gauge for Claude Code, Codex, and GitHub Copilot.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "publisher": "jamesbooz",
   "license": "MIT",
   "pricing": "Free",
@@ -122,7 +122,8 @@
     "test:unit": "node scripts/test-unit.mjs",
     "test:integration": "npm run compile:tests && node ./dist-test/test/integration/runTest.js",
     "compile:tests": "tsc -p tsconfig.test.json",
-    "package": "npm run check && node scripts/package-current-platform.mjs",
+    "package": "npm run check && node scripts/package-universal.mjs",
+    "package:platform": "npm run check && node scripts/package-current-platform.mjs",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "vscode:prepublish": "npm run build"
   },
