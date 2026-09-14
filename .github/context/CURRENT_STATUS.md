@@ -24,6 +24,9 @@ Last verified: 2026-09-14 (Asia/Manila)
   dependency and its matching native x64 runtime.
 - Local `npm run package` detects Windows, Linux, or macOS x64 and emits a
   target-specific VSIX rather than a misleading universal package.
+- CI and release packaging pin the macOS x64 job to GitHub's
+  `macos-15-intel` runner. `macos-latest` is arm64 and installs an arm64 native
+  dependency that cannot satisfy a `darwin-x64` package.
 - Package validation enforces a 150 MB limit, requires the matching runtime,
   permits only the SDK's expected production dependency tree, and rejects
   source, tests, workflows, scripts, source maps, environment files, and
