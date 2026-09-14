@@ -7,6 +7,7 @@
   details.
 - Moved the full usage gauge to an on-demand editor tab.
 - Put the currently selected AI provider first in the provider/action picker.
+- Added a short Marketplace walkthrough showing the new three-step flow.
 
 ## 1.0.1 — Bundled Copilot runtime
 

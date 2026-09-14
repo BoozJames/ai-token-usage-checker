@@ -7,6 +7,8 @@ refresh, or open the full usage breakdown.
 It displays only supported provider-reported values. Missing usage is shown as
 unavailable—it is never guessed or replaced with zero.
 
+![Hover for usage, choose a provider, and open full details](media/usage-workflow.gif)
+
 ## Quick start
 
 1. Install and sign in to at least one supported provider tool.
