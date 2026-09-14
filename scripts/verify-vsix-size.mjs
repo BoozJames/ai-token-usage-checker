@@ -29,7 +29,11 @@ const manifest = readArchive(path, "extension.vsixmanifest");
 if (/Microsoft\.VisualStudio\.Code\.PreRelease/i.test(manifest)) {
   throw new Error(`${basename(path)} is unexpectedly marked as a pre-release`);
 }
-if (expectedTarget && !new RegExp(`TargetPlatform="${escapeRegExp(expectedTarget)}"`, "i").test(manifest)) {
+const isUniversal = expectedTarget === "universal-x64";
+if (isUniversal && /TargetPlatform=/i.test(manifest)) {
+  throw new Error(`${basename(path)} is unexpectedly marked as platform-specific`);
+}
+if (expectedTarget && !isUniversal && !new RegExp(`TargetPlatform="${escapeRegExp(expectedTarget)}"`, "i").test(manifest)) {
   throw new Error(`${basename(path)} is not marked for target ${expectedTarget}`);
 }
 
@@ -46,8 +50,24 @@ if (packageJson.contributes?.views || packageJson.contributes?.viewsContainers |
 }
 
 const runtimePackage = expectedTarget ? `extension/node_modules/@github/copilot-sdk-${expectedTarget}/` : undefined;
-if (runtimePackage && !entries.some((entry) => entry.startsWith(runtimePackage))) {
+if (runtimePackage && !isUniversal && !entries.some((entry) => entry.startsWith(runtimePackage))) {
   throw new Error(`${basename(path)} does not contain the packaged runtime ${runtimePackage}`);
+}
+
+if (isUniversal) {
+  for (const target of ["win32-x64", "linux-x64", "darwin-x64"]) {
+    const runtimeRoot = `extension/resources/copilot-runtimes/${target}/`;
+    if (!entries.some((entry) => entry.startsWith(runtimeRoot))) {
+      throw new Error(`${basename(path)} does not contain the bundled ${target} runtime`);
+    }
+    const runtimeManifest = JSON.parse(readArchive(path, `${runtimeRoot}package.json`));
+    if (runtimeManifest.name !== `@github/copilot-sdk-${target}` || runtimeManifest.version !== "1.0.13") {
+      throw new Error(`${basename(path)} contains unexpected ${target} runtime metadata`);
+    }
+  }
+  if (entries.some((entry) => entry.startsWith("extension/node_modules/"))) {
+    throw new Error(`${basename(path)} unexpectedly contains node_modules in addition to the bundled runtimes`);
+  }
 }
 
 console.log(`Verified ${basename(path)}: ${(size / 1024 / 1024).toFixed(2)} MB, ${entries.length} files, stable manifest, bundled ${expectedTarget ?? "Copilot"} runtime`);

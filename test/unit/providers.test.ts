@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { parseClaudeSnapshot } from "../../src/providers/claude";
 import { normalizeCodex } from "../../src/providers/codex";
-import { normalizeCopilot } from "../../src/providers/copilot";
+import { bundledCopilotRuntimePath, normalizeCopilot } from "../../src/providers/copilot";
 
 describe("Claude normalization", () => {
   it("accepts missing rate limits and bounded context", () => {
@@ -43,6 +43,21 @@ describe("Codex normalization", () => {
 });
 
 describe("Copilot normalization", () => {
+  it("selects the runtime bundled for the current operating system", () => {
+    assert.match(
+      bundledCopilotRuntimePath("/extension", "linux", "x64"),
+      /resources[\\/]copilot-runtimes[\\/]linux-x64[\\/]prebuilds[\\/]linux-x64[\\/]copilot-runtime$/
+    );
+    assert.match(
+      bundledCopilotRuntimePath("C:\\extension", "win32", "x64"),
+      /resources[\\/]copilot-runtimes[\\/]win32-x64[\\/]prebuilds[\\/]win32-x64[\\/]copilot-runtime\.exe$/
+    );
+    assert.throws(
+      () => bundledCopilotRuntimePath("/extension", "darwin", "arm64"),
+      /does not support darwin-arm64/
+    );
+  });
+
   it("skips unlimited quotas and accepts runtime quota keys", () => {
     const snapshot = normalizeCopilot({
       chat: { isUnlimitedEntitlement: true, remainingPercentage: 100 },

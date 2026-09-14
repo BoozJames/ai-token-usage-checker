@@ -2,13 +2,13 @@
 
 Work from the top. Preserve the documented provider security boundaries.
 
-## 1. Validate the bundled Copilot runtime release
+## 1. Validate the universal Copilot runtime package
 
 - Confirm CI passes with the repository's supported Node.js version. Local
-  `npm ci`, `npm run package`, `npm run test:integration`, and audit validation
-  already pass, and the generated Windows archive has been inspected.
-- Install the Windows package in a clean VS Code profile and verify Copilot
-  connects without a separately installed `copilot` executable.
+  packaging, integration, audit, archive inspection, and isolated VSIX
+  installation already pass on Windows.
+- Verify Copilot connects from the installed universal VSIX with a real account
+  and no separately installed `copilot` executable.
 - Confirm uninstall removes the packaged runtime with the extension and does not
   leave an SDK runtime cache.
 
@@ -24,23 +24,21 @@ Work from the top. Preserve the documented provider security boundaries.
 
 ## 3. Clean-profile acceptance testing
 
-- Test the matching VSIX on Windows, macOS, and Linux x64.
+- Test the same universal VSIX on Windows, macOS, and Linux x64.
 - Verify provider switching, consent, connect/disconnect, refresh throttling,
   read-only details, themes, keyboard navigation, accessibility, and disposal.
 - Verify no provider work occurs before consent.
 
-## 4. Manually upload `v1.0.2` to the Marketplace
+## 4. Release and manually upload `v1.0.3`
 
-- The feature and release pull requests are merged, tag `v1.0.2` is immutable,
-  and the GitHub release contains all three target-specific VSIX files and
-  checksums.
-- Upload the required target package manually from publisher `jamesbooz` using
+- Keep the existing `v1.0.2` tag and release immutable. Promote the universal
+  package through `develop` and `master`, then create a new `v1.0.3` tag.
+- Upload `ai-token-checker-universal-x64.vsix` manually from publisher `jamesbooz` using
   **More Actions → Update**.
 
 ## 5. Keep Marketplace publishing manual
 
 - Do not add Marketplace PAT, OIDC, or Entra credentials to the repository.
-- Use `npm ci` followed by `npm run package` for a checked local VSIX matching
-  the current supported x64 operating system.
+- Use `npm ci` followed by `npm run package` for the checked universal x64 VSIX.
 - Confirm the Marketplace page accurately states provider prerequisites,
   privacy boundaries, metric limitations, and supported platforms.

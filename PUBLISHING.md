@@ -20,9 +20,9 @@ tag or publish a commit directly from a feature branch.
    ```
 
 The `Release` GitHub Actions workflow verifies that the tag is on `master` and
-matches `package.json`, builds Windows, Linux, and macOS x64 VSIX files with the
-matching packaged Copilot runtime, creates SHA-256 checksums, and attaches them
-to a GitHub release. It does not publish to the VS Code Marketplace.
+matches `package.json`, builds the universal x64 VSIX, creates its SHA-256
+checksum, and attaches both files to a GitHub release. It does not publish to
+the VS Code Marketplace.
 
 Afterward, merge `master` back into `develop` through a pull request.
 
@@ -38,13 +38,17 @@ npm ci
 npm run package
 ```
 
-The package command runs all checks, detects the current operating system, and
-creates one target-specific file such as
-`ai-token-checker-win32-x64.vsix`. Upload that file from the existing extension's
-**More Actions → Update** page under publisher `jamesbooz`. Do not use **New
-extension** for an update. A package contains only its matching native Copilot
-runtime; build and upload each operating-system target separately when all
-three targets are required.
+The package command runs all checks and creates
+`ai-token-checker-universal-x64.vsix`. It downloads the pinned official Copilot
+runtimes for Windows, Linux, and macOS x64 into a disposable staging directory;
+the downloaded files are never added to the working tree. Upload the resulting
+VSIX from the existing extension's **More Actions → Update** page under
+publisher `jamesbooz`. Do not use **New extension** for an update.
+
+The package is universal across the three supported desktop operating systems,
+but it is x64-only. It is intentionally not marked with a Marketplace target,
+allowing the manual portal's single upload field to accept it as the fallback
+package.
 
 VS Code Marketplace versions must use `major.minor.patch`; suffixes such as
 `-alpha` are not supported. Stable releases follow semantic versioning from

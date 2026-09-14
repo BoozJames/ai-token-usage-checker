@@ -40,12 +40,23 @@ jobs:
       - name: Extension Host tests
         if: runner.os != 'Linux'
         run: npm run test:integration
-      - name: Package validation
-        run: npx vsce package --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
-      - name: Verify bundled runtime package
-        run: node scripts/verify-vsix-size.mjs ai-token-checker-${{ matrix.target }}.vsix ${{ matrix.target }}
+
+  package-universal:
+    name: Package universal x64 VSIX
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.0
+          cache: npm
+      - run: npm ci
+      - run: npm run package
       - uses: actions/upload-artifact@v4
         with:
-          name: vsix-${{ matrix.target }}
-          path: ai-token-checker-${{ matrix.target }}.vsix
+          name: vsix-universal-x64
+          path: ai-token-checker-universal-x64.vsix
           if-no-files-found: error
