@@ -7,12 +7,14 @@ export async function run(): Promise<void> {
   assert.ok(extension, "extension should be discoverable");
   const manifest = extension.packageJSON as {
     version?: unknown;
+    dependencies?: Record<string, unknown>;
     contributes?: { menus?: Record<string, unknown>; configuration?: { properties?: Record<string, unknown> } };
   };
-  assert.equal(manifest.version, "1.0.0");
+  assert.equal(manifest.version, "1.0.1");
   assert.equal(manifest.contributes?.menus?.["editor/title"], undefined, "editor-title action should be removed");
   assert.equal(manifest.contributes?.menus?.["view/title"], undefined, "sidebar title actions should be removed");
-  assert.ok(manifest.contributes?.configuration?.properties?.["aiTokenChecker.copilot.executable"]);
+  assert.equal(manifest.contributes?.configuration?.properties?.["aiTokenChecker.copilot.executable"], undefined);
+  assert.equal(manifest.dependencies?.["@github/copilot-sdk"], "1.0.13");
   await extension.activate();
   const commands = await vscode.commands.getCommands(true);
   assert.ok(commands.includes("aiTokenChecker.refresh"));

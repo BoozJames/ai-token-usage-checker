@@ -1,61 +1,47 @@
 # Next Steps
 
-Work from the top. Do not publish or weaken provider security boundaries to
-bypass a blocked integration.
+Work from the top. Preserve the documented provider security boundaries.
 
-## 1. Review and merge the release-output reference fix
+## 1. Validate the bundled Copilot runtime release
 
-- Review pull request #17 from `bugfix/release-output-reference` into `develop`.
-- Confirm its latest-head CI checks are green, then merge it.
-- Open a release pull request from `develop` into `master`.
-- Merge the output-reference fix into `master`; do not create another version
-  tag.
-
-Do not publish directly from the feature branch.
+- Confirm CI passes with the repository's supported Node.js version. Local
+  `npm ci`, `npm run package`, `npm run test:integration`, and audit validation
+  already pass, and the generated Windows archive has been inspected.
+- Install the Windows package in a clean VS Code profile and verify Copilot
+  connects without a separately installed `copilot` executable.
+- Confirm uninstall removes the packaged runtime with the extension and does not
+  leave an SDK runtime cache.
 
 ## 2. Complete real-provider validation
 
-- Install the official GitHub Copilot CLI separately, connect Copilot through the
-  status-bar Quick Pick, and verify `account.getQuota` with a real account.
-- Confirm the supported SDK/CLI response matches the extension's provider and
-  source labels. Do not infer dashboard-only metrics.
+- Verify `account.getQuota` with a real Copilot account using only the packaged
+  runtime and confirm source labels remain accurate.
 - Confirm Claude Code owns a valid CLI login, start a fresh Claude CLI session
   after bridge setup, and complete one assistant response.
-- Verify Claude 5-hour/7-day fields when the account reports them. A browser-only
-  Claude login is not a supported substitute for Claude CLI authentication.
 - Never capture provider responses, tokens, account identifiers, user paths,
   prompts, transcripts, or source code in fixtures, issues, screenshots, or this
   context directory.
 
 ## 3. Clean-profile acceptance testing
 
-- Install `ai-token-checker.vsix` in clean VS Code profiles on Windows, macOS,
-  and Linux.
-- Verify the status-bar Quick Pick, provider switching, consent, connect and
-  disconnect, refresh throttling, read-only sidebar details, view movement,
-  themes, keyboard navigation, accessibility, and disposal.
+- Test the matching VSIX on Windows, macOS, and Linux x64.
+- Verify provider switching, consent, connect/disconnect, refresh throttling,
+  read-only details, themes, keyboard navigation, accessibility, and disposal.
 - Verify no provider work occurs before consent.
-- Verify uninstall and rollback remove only extension-owned Claude settings and
-  files.
 
-## 4. Recover `v1.0.0` Marketplace publishing
+## 4. Release and manually upload `v1.0.1`
 
-- After the recovery reaches `master`, open **Actions → Release → Run workflow**
-  from `master`, enter existing tag `v1.0.0`, and run it.
-- Confirm the existing GitHub release retains the three VSIX files and SHA-256
-  checksums, and confirm the Marketplace publishing job succeeds.
-- Do not delete, move, or recreate tag `v1.0.0`.
-- Keep the existing `v0.3.0` tag unchanged. Use the documented manual recovery
-  only if the missing preview GitHub release is still wanted.
+- Merge this feature through `develop` and `master` after review and green CI.
+- Tag the promoted `master` commit as `v1.0.1`; do not move existing tags.
+- Confirm the GitHub release contains the three target-specific VSIX files and
+  checksums.
+- Upload the required target package manually from publisher `jamesbooz` using
+  **More Actions → Update**.
 
-## 5. Configure secure Marketplace publishing
+## 5. Keep Marketplace publishing manual
 
-- Configure Visual Studio Marketplace trusted publishing for this repository and
-  `.github/workflows/release.yml`.
-- Use `vsce publish --oidc`; do not add a long-lived Marketplace PAT to repository
-  secrets.
-- Set `VSCE_PUBLISH_ENABLED` to `true` only after the trusted policy is active.
-- Publish only a version tag whose commit is on `master` and whose version matches
-  `package.json`.
+- Do not add Marketplace PAT, OIDC, or Entra credentials to the repository.
+- Use `npm ci` followed by `npm run package` for a checked local VSIX matching
+  the current supported x64 operating system.
 - Confirm the Marketplace page accurately states provider prerequisites,
-  privacy boundaries, metric limitations, and unsupported environments.
+  privacy boundaries, metric limitations, and supported platforms.

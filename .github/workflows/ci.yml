@@ -15,7 +15,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: windows-latest
+            target: win32-x64
+          - os: ubuntu-latest
+            target: linux-x64
+          - os: macos-latest
+            target: darwin-x64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -35,11 +41,11 @@ jobs:
         if: runner.os != 'Linux'
         run: npm run test:integration
       - name: Package validation
-        run: npx vsce package --out ai-token-checker-${{ runner.os }}.vsix
-      - name: Enforce compact package
-        run: node scripts/verify-vsix-size.mjs ai-token-checker-${{ runner.os }}.vsix
+        run: npx vsce package --target ${{ matrix.target }} --out ai-token-checker-${{ matrix.target }}.vsix
+      - name: Verify bundled runtime package
+        run: node scripts/verify-vsix-size.mjs ai-token-checker-${{ matrix.target }}.vsix ${{ matrix.target }}
       - uses: actions/upload-artifact@v4
         with:
-          name: vsix-${{ runner.os }}
-          path: ai-token-checker-${{ runner.os }}.vsix
+          name: vsix-${{ matrix.target }}
+          path: ai-token-checker-${{ matrix.target }}.vsix
           if-no-files-found: error
