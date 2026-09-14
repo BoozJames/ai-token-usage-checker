@@ -34,7 +34,7 @@ Last verified: 2026-09-14 (Asia/Manila)
 - `npm ci`, `npm run package`, `npm run test:integration`, and
   `npm audit --audit-level=high` pass locally. The package command includes
   lint, type checking, 22 unit tests, secret scanning, and a production build.
-- `ai-token-checker-win32-x64.vsix` is 44.00 MB with 782 files. Archive
+- `ai-token-checker-win32-x64.vsix` is 44.06 MB with 783 files. Archive
   validation confirms stable metadata, the `win32-x64` target, and the matching
   packaged runtime.
 - Local validation used Node.js 20.10.0 and emitted engine warnings because the
@@ -49,6 +49,8 @@ Last verified: 2026-09-14 (Asia/Manila)
   connection state and usage summary, then lists the other providers.
 - Full usage details open in a single reusable editor tab on demand. The
   Activity Bar icon and permanent sidebar contribution have been removed.
+- The Marketplace README includes a short generated GIF showing hover, provider
+  selection, and the on-demand details tab without real account data.
 - The Copilot CLI installation action and external executable setting have been
   removed because the runtime is packaged with the extension.
 - The on-demand details tab remains read-only, with one responsive progress bar,
