@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
-import { parseClaudeSnapshot } from "../../src/providers/claude";
+import { ClaudeAdapter, mergeClaudeSnapshot, parseClaudeSnapshot } from "../../src/providers/claude";
 import { normalizeCodex } from "../../src/providers/codex";
 import { bundledCopilotRuntimePath, normalizeCopilot } from "../../src/providers/copilot";
 
@@ -18,6 +22,107 @@ describe("Claude normalization", () => {
 
   it("rejects unknown bridge schemas", () => {
     assert.throws(() => parseClaudeSnapshot({ schemaVersion: 9 }), /Unsupported/);
+  });
+});
+
+describe("Claude source merge", () => {
+  it("prefers the status line's context usage over telemetry", () => {
+    const statusLine = parseClaudeSnapshot({
+      schemaVersion: 1,
+      observedAt: "2026-09-10T00:00:00.000Z",
+      context: { totalTokens: 500, limit: 10_000 }
+    });
+    const merged = mergeClaudeSnapshot(statusLine, { total: 99_999, observedAt: "2026-09-10T00:05:00.000Z" });
+    assert.deepEqual(merged.tokenUsage, { scope: "context", total: 500, limit: 10_000 });
+    assert.equal(merged.source.label, "Claude Code status line");
+  });
+
+  it("keeps status line quota windows and adds telemetry token usage when there is no context usage", () => {
+    const statusLine = parseClaudeSnapshot({
+      schemaVersion: 1,
+      observedAt: "2026-09-10T00:00:00.000Z",
+      rateLimits: { fiveHour: { usedPercent: 40, resetsAt: "2026-09-10T05:00:00.000Z" } }
+    });
+    const merged = mergeClaudeSnapshot(statusLine, { total: 1_234, observedAt: "2026-09-10T00:05:00.000Z" });
+    assert.equal(merged.quotaWindows.length, 1);
+    assert.deepEqual(merged.tokenUsage, { scope: "session", total: 1_234 });
+    assert.equal(merged.source.label, "Claude Code status line + telemetry");
+    assert.equal(merged.observedAt, "2026-09-10T00:05:00.000Z");
+  });
+
+  it("uses telemetry alone as an indeterminate session total", () => {
+    const merged = mergeClaudeSnapshot(undefined, { total: 42, observedAt: "2026-09-10T00:05:00.000Z" });
+    assert.equal(merged.state, "ready");
+    assert.equal(merged.quotaWindows.length, 0);
+    assert.deepEqual(merged.tokenUsage, { scope: "session", total: 42 });
+    assert.equal(merged.source.label, "Claude Code telemetry");
+  });
+
+  it("reports unavailable without fabricating a value when neither source has data", () => {
+    const merged = mergeClaudeSnapshot(undefined, undefined);
+    assert.equal(merged.state, "unavailable");
+    assert.equal(merged.tokenUsage, undefined);
+    assert.equal(merged.quotaWindows.length, 0);
+  });
+});
+
+describe("ClaudeAdapter.connect", () => {
+  it("does not throw when telemetry is enabled but global storage has never been created (first-ever run)", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "ai-token-checker-claude-adapter-"));
+    const missingStorageDir = join(directory, "not-created-yet");
+    try {
+      const adapter = new ClaudeAdapter({
+        snapshotPath: join(missingStorageDir, "claude-metrics.json"),
+        bridgePath: join(missingStorageDir, "claude-bridge.cjs"),
+        telemetrySnapshotPath: join(missingStorageDir, "claude-otel-metrics.json"),
+        telemetryEnabled: () => true,
+        createReceiver: () => undefined,
+        onChanged: () => undefined
+      });
+      const result = await adapter.connect();
+      assert.equal(result.connected, true);
+      assert.ok(existsSync(missingStorageDir), "connect() must create the watched directory instead of throwing ENOENT");
+      await adapter.disconnect();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("shares a telemetry total across windows via the mirrored file, even when this window's own receiver loses the port-bind race", async () => {
+    // Simulates a second concurrently open VS Code window: its own ClaudeOtelReceiver
+    // failed to bind (another window already owns the port, createReceiver returns
+    // undefined here to model that), yet refresh() must still reflect the total the
+    // OTHER window's receiver already wrote to the shared global-storage file.
+    const directory = await mkdtemp(join(tmpdir(), "ai-token-checker-claude-adapter-shared-"));
+    try {
+      const telemetrySnapshotPath = join(directory, "claude-otel-metrics.json");
+      await mkdir(directory, { recursive: true });
+      await writeFile(
+        telemetrySnapshotPath,
+        JSON.stringify({ schemaVersion: 1, observedAt: "2026-09-16T02:17:50.730Z", totalTokens: 44_004 }),
+        "utf8"
+      );
+
+      const adapter = new ClaudeAdapter({
+        snapshotPath: join(directory, "claude-metrics.json"),
+        bridgePath: join(directory, "claude-bridge.cjs"),
+        telemetrySnapshotPath,
+        telemetryEnabled: () => true,
+        createReceiver: () => undefined, // this window's receiver never started (port already owned elsewhere)
+        onChanged: () => undefined
+      });
+      const connectResult = await adapter.connect();
+      assert.equal(connectResult.connected, true);
+
+      const snapshot = await adapter.refresh(new AbortController().signal);
+      assert.equal(snapshot.state, "ready");
+      assert.deepEqual(snapshot.tokenUsage, { scope: "session", total: 44_004 });
+      assert.equal(snapshot.source.label, "Claude Code telemetry");
+
+      await adapter.disconnect();
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
 
@@ -104,7 +209,6 @@ describe("Copilot normalization", () => {
         isUnlimitedEntitlement: false,
         remainingPercentage: 0,
         entitlementRequests: 0,
-        hasQuota: false,
         resetDate: "2026-09-10T13:00:00Z"
       }
     }, new Date("2026-09-10T13:00:00Z"));
@@ -112,19 +216,31 @@ describe("Copilot normalization", () => {
     assert.equal(snapshot.quotaWindows.length, 0);
   });
 
+  it("does not skip a bucket just because entitlementRequests is absent", () => {
+    // entitlementRequests is only known to be reliably present since SDK 1.0.13; an
+    // older or partial response omitting it must not be treated as "no entitlement" -
+    // that would hide real usage data the account actually has.
+    const snapshot = normalizeCopilot({
+      chat: { isUnlimitedEntitlement: false, remainingPercentage: 40 }
+    });
+    assert.equal(snapshot.state, "ready");
+    assert.equal(snapshot.quotaWindows.length, 1);
+    assert.equal(snapshot.quotaWindows[0]?.usedPercent, 60);
+  });
+
   it("normalizes a real Free-plan getQuota response", () => {
     const snapshot = normalizeCopilot({
       chat: {
         isUnlimitedEntitlement: false, entitlementRequests: 200, usedRequests: 0,
-        remainingPercentage: 100, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: true
+        remainingPercentage: 100, resetDate: "2026-09-10T16:59:26.754Z"
       },
       completions: {
         isUnlimitedEntitlement: false, entitlementRequests: 2000, usedRequests: 90,
-        remainingPercentage: 95.5, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: true
+        remainingPercentage: 95.5, resetDate: "2026-09-10T16:59:26.754Z"
       },
       premium_interactions: {
         isUnlimitedEntitlement: false, entitlementRequests: 0, usedRequests: 0,
-        remainingPercentage: 0, resetDate: "2026-09-10T16:59:26.754Z", hasQuota: false
+        remainingPercentage: 0, resetDate: "2026-09-10T16:59:26.754Z"
       }
     }, new Date("2026-09-10T16:59:26.380Z"));
     assert.equal(snapshot.state, "ready");
