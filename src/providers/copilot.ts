@@ -11,6 +11,7 @@ interface CopilotClientHandle {
       getQuota(params: Record<string, never>): Promise<{
         quotaSnapshots: Record<string, {
           isUnlimitedEntitlement: boolean;
+          entitlementRequests: number;
           remainingPercentage: number;
           resetDate?: string;
         } | undefined>;
@@ -59,7 +60,7 @@ export class CopilotAdapter implements ProviderAdapter {
       logLevel: "none",
       enableRemoteSessions: false,
       connection: RuntimeConnection.forStdio({ path: runtimePath }),
-      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "1.0.3" }
+      clientInfo: { applicationName: "ai-token-checker", applicationVersion: "1.0.4" }
     });
     try {
       await client.start();
@@ -174,7 +175,6 @@ interface CopilotQuota {
   entitlementRequests?: number;
   usedRequests?: number;
   resetDate?: string;
-  hasQuota?: boolean;
 }
 
 export function normalizeCopilot(
@@ -183,7 +183,10 @@ export function normalizeCopilot(
 ): ProviderSnapshot {
     const quotaWindows: QuotaWindow[] = [];
     for (const [id, quota] of Object.entries(quotaSnapshots)) {
-      if (!quota || quota.isUnlimitedEntitlement || quota.hasQuota === false) continue;
+      // The SDK's own generated types (@github/copilot-sdk 1.0.13, AccountQuotaSnapshot)
+      // have no "hasQuota" field; entitlementRequests === 0 is the real, documented signal
+      // for "no entitlement," distinct from -1 (unlimited, already handled separately below).
+      if (!quota || quota.isUnlimitedEntitlement || quota.entitlementRequests === 0) continue;
       const usedPercent = 100 - quota.remainingPercentage;
       if (!Number.isFinite(usedPercent)) continue;
       // The SDK's resetDate is only trustworthy when it is actually in the future;

@@ -16,7 +16,7 @@ export async function run(): Promise<void> {
       configuration?: { properties?: Record<string, unknown> };
     };
   };
-  assert.equal(manifest.version, "1.0.3");
+  assert.equal(manifest.version, "1.0.4");
   assert.equal(manifest.contributes?.menus?.["editor/title"], undefined, "editor-title action should be removed");
   assert.equal(manifest.contributes?.menus?.["view/title"], undefined, "sidebar title actions should be removed");
   assert.equal(manifest.contributes?.views, undefined, "sidebar views should be removed");
@@ -31,6 +31,9 @@ export async function run(): Promise<void> {
   assert.ok(commands.includes("aiTokenChecker.showGauge"));
   assert.ok(commands.includes("aiTokenChecker.pickProvider"));
   assert.ok(commands.includes("aiTokenChecker.setupClaude"));
+  assert.ok(commands.includes("aiTokenChecker.removeClaudeBridge"));
+  assert.ok(commands.includes("aiTokenChecker.setupClaudeTelemetry"));
+  assert.ok(commands.includes("aiTokenChecker.removeClaudeTelemetry"));
   await assert.doesNotReject(async () => vscode.commands.executeCommand("aiTokenChecker.showGauge"));
   console.log(`Integration smoke test passed from ${resolve(__dirname, "../../..")} .`);
 }

@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.4 — Claude Code telemetry for panel mode, Copilot quota fix
+
+- Added a second, independent Claude Code data source using Claude Code's
+  documented OpenTelemetry metrics export, reaching graphical-panel
+  sessions the status-line bridge cannot: `claudeCode.useTerminal: false`
+  never invokes the status line at all. Shows an indeterminate session
+  token total as a strict fallback; the status line's quota windows and
+  context tokens always take precedence when present, and no rate-limit
+  percentage is ever synthesized from telemetry, because none exists in
+  that channel. New "Enable/Disable Claude Code Telemetry" commands.
+- Fixed a GitHub Copilot quota bug: a skip condition referenced a
+  `hasQuota` field that does not exist in the pinned SDK's own declared
+  types, so it never fired; a bucket the account has zero entitlement for
+  (e.g. Premium Interactions on Copilot Free) could render as a misleading
+  "100% used" window. Now keys off the real `entitlementRequests` field.
+- Both changes were verified end to end: the Claude telemetry path against
+  a real account and a real Claude Code panel session; the Copilot fix
+  against the pinned SDK's own generated type declarations.
+
 ## 1.0.3 — Universal x64 package
 
 - Added one manually uploadable VSIX containing the official Windows, Linux,
