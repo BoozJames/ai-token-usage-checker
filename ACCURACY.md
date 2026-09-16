@@ -2,7 +2,7 @@
 
 Every displayed value carries a source and accuracy label.
 
-- **Claude Code:** provider-reported status-line fields. Context tokens describe the latest live context, not subscription consumption. Subscription windows may be absent.
+- **Claude Code:** provider-reported status-line fields. Context tokens describe the latest live context, not subscription consumption. Subscription windows may be absent. When telemetry is enabled and the status line has not reported context usage (typically because Claude Code is running in the graphical panel, not the terminal), an indeterminate session token total from Claude Code's OpenTelemetry export is shown instead. That total sums every token type Claude Code reports, including cache reads, so it is not comparable to the status line's context count, and it carries no quota percentage or reset time — no such metric exists in this channel. A data point with an unspecified aggregation temporality is treated as cumulative, which can under-report a total but never inflate it.
 - **Codex:** provider-reported account rate-limit and usage fields returned by the local app server. These are not OpenAI API billing totals.
 - **GitHub Copilot:** provider-reported account quota from the official SDK client and the current operating system's runtime inside the universal x64 package. Expired quota windows are ignored. GitHub's newer AI Credits dashboard can differ from SDK quota buckets, so the extension labels the exact SDK bucket and does not claim that different metrics are equivalent. Token totals from an existing VS Code Copilot Chat session are unavailable.
 

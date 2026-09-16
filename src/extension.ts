@@ -2,9 +2,18 @@ import * as vscode from "vscode";
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import { claudeSnapshotPath, removeClaudeBridge, setupClaudeBridge } from "./claudeSetup";
+import {
+  claudeTelemetrySnapshotPath,
+  configuredTelemetryPort,
+  removeClaudeTelemetry,
+  setupClaudeTelemetry,
+  telemetryAuthToken,
+  telemetryEnabled
+} from "./claudeTelemetrySetup";
 import { ProviderController } from "./controller";
 import type { ProviderAdapter, ProviderId } from "./model";
 import { ClaudeAdapter } from "./providers/claude";
+import { ClaudeOtelReceiver } from "./providers/claudeOtelReceiver";
 import { CodexAdapter } from "./providers/codex";
 import { CopilotAdapter } from "./providers/copilot";
 import { sanitizeError } from "./sanitize";
@@ -17,6 +26,17 @@ export function activate(context: vscode.ExtensionContext): void {
   adapters.set("claude", new ClaudeAdapter({
     snapshotPath: claudeSnapshotPath(context),
     bridgePath: join(context.globalStorageUri.fsPath, "claude-bridge.cjs"),
+    telemetrySnapshotPath: claudeTelemetrySnapshotPath(context),
+    telemetryEnabled: () => telemetryEnabled(context),
+    createReceiver: () => {
+      const authToken = telemetryAuthToken(context);
+      if (!authToken) return undefined;
+      return new ClaudeOtelReceiver({
+        port: configuredTelemetryPort(),
+        authToken,
+        snapshotPath: claudeTelemetrySnapshotPath(context)
+      });
+    },
     onChanged: () => void controller.refresh()
   }));
   adapters.set("codex", new CodexAdapter(resolveCodexExecutable));
@@ -42,6 +62,14 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("aiTokenChecker.removeClaudeBridge", async () => {
       try { await removeClaudeBridge(context); }
       catch (error) { void vscode.window.showErrorMessage(`Claude bridge removal failed: ${sanitizeError(error)}`); }
+    }),
+    vscode.commands.registerCommand("aiTokenChecker.setupClaudeTelemetry", async () => {
+      try { if (await setupClaudeTelemetry(context)) await controller.connect(); }
+      catch (error) { void vscode.window.showErrorMessage(`Claude telemetry setup failed: ${sanitizeError(error)}`); }
+    }),
+    vscode.commands.registerCommand("aiTokenChecker.removeClaudeTelemetry", async () => {
+      try { await removeClaudeTelemetry(context); }
+      catch (error) { void vscode.window.showErrorMessage(`Claude telemetry removal failed: ${sanitizeError(error)}`); }
     })
   );
 }
@@ -50,7 +78,7 @@ export function deactivate(): void {}
 
 type ProviderPickerItem = vscode.QuickPickItem & {
   provider?: ProviderId;
-  action?: "connect" | "disconnect" | "refresh" | "details" | "setupClaude" | "removeClaude" | "settings" | "privacy";
+  action?: "connect" | "disconnect" | "refresh" | "details" | "setupClaude" | "removeClaude" | "setupClaudeTelemetry" | "removeClaudeTelemetry" | "settings" | "privacy";
 };
 
 async function showProviderPicker(controller: ProviderController): Promise<void> {
@@ -71,7 +99,9 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
     { label: "$(refresh) Refresh selected provider", action: "refresh" },
     ...(selected === "claude" ? [
       { label: "$(tools) Set up or repair Claude bridge", description: "One-time setup", action: "setupClaude" as const },
-      { label: "$(trash) Remove Claude bridge", description: "Restore the previous status line", action: "removeClaude" as const }
+      { label: "$(trash) Remove Claude bridge", description: "Restore the previous status line", action: "removeClaude" as const },
+      { label: "$(radio-tower) Enable Claude Code telemetry", description: "For panel-mode sessions", action: "setupClaudeTelemetry" as const },
+      { label: "$(circle-slash) Disable Claude Code telemetry", action: "removeClaudeTelemetry" as const }
     ] : []),
     { label: "View and help", kind: vscode.QuickPickItemKind.Separator },
     { label: "$(open-preview) Open usage details", action: "details" },
@@ -96,6 +126,8 @@ async function showProviderPicker(controller: ProviderController): Promise<void>
     case "details": await vscode.commands.executeCommand("aiTokenChecker.showGauge"); break;
     case "setupClaude": await vscode.commands.executeCommand("aiTokenChecker.setupClaude"); break;
     case "removeClaude": await vscode.commands.executeCommand("aiTokenChecker.removeClaudeBridge"); break;
+    case "setupClaudeTelemetry": await vscode.commands.executeCommand("aiTokenChecker.setupClaudeTelemetry"); break;
+    case "removeClaudeTelemetry": await vscode.commands.executeCommand("aiTokenChecker.removeClaudeTelemetry"); break;
     case "settings": await vscode.commands.executeCommand("workbench.action.openSettings", "@ext:jamesbooz.ai-token-checker"); break;
     case "privacy": await vscode.env.openExternal(vscode.Uri.parse("https://github.com/BoozJames/ai-token-usage-checker/blob/master/PRIVACY.md")); break;
   }

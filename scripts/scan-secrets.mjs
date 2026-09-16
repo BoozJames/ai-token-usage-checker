@@ -4,8 +4,8 @@ import { promisify } from "node:util";
 import { join, relative } from "node:path";
 
 const root = process.cwd();
-const ignored = new Set([".git", ".vscode-test", "node_modules", "dist", "dist-test", "coverage"]);
-const sensitiveFileNames = new Set([".credentials.json", "auth.json", "claude-metrics.json"]);
+const ignored = new Set([".git", ".vscode-test", "node_modules", "dist", "dist-test", "coverage", ".claude", ".codex"]);
+const sensitiveFileNames = new Set([".credentials.json", "auth.json", "claude-metrics.json", "claude-otel-metrics.json"]);
 const patterns = [
   ["OpenAI-style API key", /\bsk-[A-Za-z0-9_-]{20,}\b/],
   ["GitHub token", /\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/],
