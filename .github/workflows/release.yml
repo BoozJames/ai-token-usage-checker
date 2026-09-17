@@ -112,7 +112,7 @@ jobs:
       - name: Create checksum
         if: (steps.package_mode.outputs.universal == 'true' && matrix.target == 'universal-x64') || (steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64')
         run: node scripts/checksum.mjs ai-token-checker-${{ matrix.target }}.vsix
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: (steps.package_mode.outputs.universal == 'true' && matrix.target == 'universal-x64') || (steps.package_mode.outputs.universal == 'false' && matrix.target != 'universal-x64')
         with:
           name: release-${{ matrix.target }}
