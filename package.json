@@ -148,7 +148,7 @@
     "vscode:prepublish": "npm run build"
   },
   "dependencies": {
-    "@github/copilot-sdk": "1.0.13"
+    "@github/copilot-sdk": "1.0.14"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
